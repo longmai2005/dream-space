@@ -1,0 +1,58 @@
+<body>
+    <div id="login-overlay">
+        <div class="login-card">
+            <div style="font-size: 3em; margin-bottom: 5px;">🏠</div>
+            <h1 id="form-title">Welcome Back</h1>
+            <p id="form-subtitle">Login to access your workspace</p>
+            
+            <div class="auth-form">
+                <input type="email" id="email-input" class="input-field" placeholder="Email Address">
+                <input type="password" id="pass-input" class="input-field" placeholder="Password">
+                
+                <button id="btn-submit" class="action-btn btn-primary">Sign In</button>
+                
+                <div style="display:flex; align-items:center; justify-content:space-between; color:rgba(255,255,255,0.5); font-size:0.8em">
+                    <span>OR</span>
+                </div>
+
+                <button id="btn-google" class="action-btn btn-google">
+                    <i class="fa-brands fa-google" style="color:#ea4335"></i> Continue with Google
+                </button>
+            </div>
+            
+            <p class="toggle-text" id="toggle-mode">Don't have an account? Register</p>
+        </div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div id="main-ui" class="hidden">
+        <div class="top-bar">
+            <h2>DREAM<span style="color:#4a90e2">SPACE</span></h2>
+            <div class="user-profile">
+                <i class="fa-solid fa-user-astronaut"></i>
+                <span id="user-display">User</span>
+                <i class="fa-solid fa-right-from-bracket" id="btn-logout" title="Logout" style="margin-left:10px; cursor:pointer; color:#ff6b6b"></i>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <button class="tool-btn" onclick="window.addFurniture('box')"><i class="fa-solid fa-chair"></i></button>
+            <button class="tool-btn" onclick="window.addFurniture('cylinder')"><i class="fa-solid fa-table"></i></button>
+            <button class="tool-btn" onclick="window.addFurniture('sphere')"><i class="fa-regular fa-lightbulb"></i></button>
+            <div style="height:1px; background:rgba(255,255,255,0.2); margin:10px 0"></div>
+            <button class="tool-btn" id="btn-save"><i class="fa-solid fa-floppy-disk" style="color:#2ecc71"></i></button>
+            <button class="tool-btn" id="btn-load"><i class="fa-solid fa-cloud-arrow-down" style="color:#f1c40f"></i></button>
+        </div>
+
+        <div id="admin-panel" class="hidden">
+            <h3><i class="fa-solid fa-shield-halved"></i> Admin Dashboard</h3>
+            <p style="font-size:0.8em; color:#aaa">Manage users & designs</p>
+            <div class="user-list" id="admin-user-list">
+                </div>
+            <button id="refresh-admin" style="width:100%; margin-top:10px; padding:5px; background:#444; color:white; border:none; cursor:pointer">Refresh Data</button>
+        </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>

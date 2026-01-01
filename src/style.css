@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+body { margin: 0; overflow: hidden; font-family: 'Poppins', sans-serif; background: #121212; color: white; }
+.hidden { display: none !important; }
+
+/* --- 1. MÀN HÌNH LOGIN (NEW STYLE) --- */
+#login-overlay {
+    position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+    /* Hình nền vũ trụ mờ ảo */
+    background: radial-gradient(circle at center, #2b32b2, #1488cc); 
+    display: flex; justify-content: center; align-items: center; z-index: 1000;
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.1); /* Kính mờ */
+    backdrop-filter: blur(20px);           /* Hiệu ứng mờ đục */
+    padding: 50px 40px;
+    border-radius: 24px;
+    width: 380px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    animation: float 6s ease-in-out infinite;
+}
+
+.login-card h1 { margin: 0; font-size: 2em; letter-spacing: 1px; }
+.login-card p { font-size: 0.9em; color: rgba(255,255,255,0.7); margin-bottom: 30px; }
+
+.auth-form {
+    display: flex; flex-direction: column; gap: 15px; margin-top: 20px;
+}
+
+/* Nút Google chỉ có Icon */
+.google-icon-btn {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: white;
+    border: none;
+    cursor: pointer;
+    font-size: 1.8em;
+    color: #ea4335; /* Màu đỏ Google */
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto; /* Căn giữa */
+}
+
+.google-icon-btn:hover {
+    transform: scale(1.1) rotate(15deg); /* Hiệu ứng xoay nhẹ khi di chuột */
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* --- 2. GIAO DIỆN CHÍNH (HUD) --- */
+.top-bar {
+    position: absolute; top: 0; width: 100%; height: 70px;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 30px; box-sizing: border-box;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+    pointer-events: none; /* Để click xuyên qua phần trong suốt */
+}
+.top-bar * { pointer-events: auto; }
+
+.user-profile {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 30px;
+    backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar {
+    position: absolute; right: 20px; top: 80px; width: 80px; /* Sidebar thu gọn */
+    background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px);
+    border-radius: 15px; padding: 20px 10px;
+    display: flex; flex-direction: column; gap: 15px; align-items: center;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.tool-btn {
+    width: 50px; height: 50px; border-radius: 12px; border: none;
+    background: rgba(255,255,255,0.05); color: #aaa; font-size: 1.2em;
+    cursor: pointer; transition: 0.2s;
+}
+.tool-btn:hover { background: #4a90e2; color: white; transform: scale(1.1); }
+.tool-btn.active { background: #4a90e2; color: white; box-shadow: 0 0 10px #4a90e2; }
+
+/* Tooltip (Hiện chữ khi di chuột vào icon) */
+.tool-btn:hover::after {
+    content: attr(data-tooltip);
+    position: absolute; right: 70px;
+    background: black; color: white; padding: 5px 10px;
+    border-radius: 5px; font-size: 0.8em; whitespace: nowrap;
+}
+
+.input-field {
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: white; font-size: 0.9em; outline: none;
+}
+.input-field::placeholder { color: rgba(255,255,255,0.6); }
+.input-field:focus { border-color: #4a90e2; background: rgba(255,255,255,0.2); }
+
+.action-btn {
+    padding: 12px; border: none; border-radius: 8px;
+    font-weight: 600; cursor: pointer; transition: 0.3s;
+}
+.btn-primary { background: #4a90e2; color: white; }
+.btn-primary:hover { background: #357abd; }
+.btn-google { background: white; color: #333; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px;}
+
+.toggle-text { font-size: 0.8em; margin-top: 15px; cursor: pointer; color: #ddd; text-decoration: underline; }
+
+/* ADMIN PANEL (Dành cho Admin) */
+#admin-panel {
+    position: absolute; top: 80px; left: 20px;
+    width: 300px; background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px); border-radius: 15px; padding: 20px;
+    border: 1px solid rgba(255,255,255,0.1); color: white;
+    z-index: 999;
+}
+.user-list { margin-top: 15px; max-height: 300px; overflow-y: auto; }
+.user-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.85em;
+}
+.role-badge { 
+    padding: 2px 8px; border-radius: 4px; font-size: 0.8em; 
+    background: #555; 
+}
+.role-admin { background: #e74c3c; } /* Màu đỏ cho Admin */
