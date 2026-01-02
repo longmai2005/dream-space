@@ -1,26 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DreamSpace - Thiết kế ngôi nhà mơ ước</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./src/style.css" />
+</head>
 <body>
-    <div id="login-overlay">
+    <div id="homepage">
+        <nav class="navbar">
+            <div class="logo">🏠 DreamSpace</div>
+            <button id="btn-start-nav" class="nav-btn">Bắt đầu ngay</button>
+        </nav>
+        
+        <div class="hero-section">
+            <div class="hero-content">
+                <h1>Thiết kế không gian sống <br><span>theo cách của bạn</span></h1>
+                <p>Công cụ thiết kế nội thất 3D trực tuyến đơn giản, trực quan và miễn phí. Kéo thả ý tưởng, hiện thực hóa giấc mơ.</p>
+                <button id="btn-start-hero" class="cta-btn">Thiết kế ngay <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+            <div class="hero-image">
+                <i class="fa-solid fa-cube fa-spin" style="--fa-animation-duration: 10s;"></i>
+            </div>
+        </div>
+
+        <div class="features-section">
+            <div class="feature-card">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <h3>Kéo & Thả</h3>
+                <p>Sắp xếp nội thất dễ dàng.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <h3>Lưu trữ đám mây</h3>
+                <p>Truy cập từ bất kỳ đâu.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fa-brands fa-google"></i>
+                <h3>Đăng nhập nhanh</h3>
+                <p>Google & Tài khoản riêng.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="login-overlay" class="hidden">
         <div class="login-card">
-            <div style="font-size: 3em; margin-bottom: 5px;">🏠</div>
-            <h1 id="form-title">Welcome Back</h1>
-            <p id="form-subtitle">Login to access your workspace</p>
+            <div class="back-btn" onclick="window.location.reload()"><i class="fa-solid fa-arrow-left"></i> Quay lại</div>
+            <div style="font-size: 3em; margin-bottom: 5px;">🎨</div>
+            <h1 id="form-title">Đăng nhập</h1>
+            <p id="form-subtitle">Để lưu trữ thiết kế của bạn</p>
             
             <div class="auth-form">
-                <input type="email" id="email-input" class="input-field" placeholder="Email Address">
-                <input type="password" id="pass-input" class="input-field" placeholder="Password">
+                <input type="text" id="email-input" class="input-field" placeholder="Username (Tên đăng nhập)">
+                <input type="password" id="pass-input" class="input-field" placeholder="Password (Mật khẩu)">
                 
-                <button id="btn-submit" class="action-btn btn-primary">Sign In</button>
+                <button id="btn-submit" class="action-btn btn-primary">Vào thiết kế</button>
                 
                 <div style="display:flex; align-items:center; justify-content:space-between; color:rgba(255,255,255,0.5); font-size:0.8em">
-                    <span>OR</span>
+                    <span>HOẶC</span>
                 </div>
 
                 <button id="btn-google" class="action-btn btn-google">
-                    <i class="fa-brands fa-google" style="color:#ea4335"></i> Continue with Google
+                    <i class="fa-brands fa-google" style="color:#ea4335"></i> Google
                 </button>
             </div>
-            
-            <p class="toggle-text" id="toggle-mode">Don't have an account? Register</p>
+            <p class="toggle-text" id="toggle-mode">Chưa có tài khoản? Đăng ký ngay</p>
         </div>
     </div>
 
@@ -32,27 +77,20 @@
             <div class="user-profile">
                 <i class="fa-solid fa-user-astronaut"></i>
                 <span id="user-display">User</span>
-                <i class="fa-solid fa-right-from-bracket" id="btn-logout" title="Logout" style="margin-left:10px; cursor:pointer; color:#ff6b6b"></i>
+                <i class="fa-solid fa-right-from-bracket" id="btn-logout" title="Đăng xuất" style="margin-left:10px; cursor:pointer; color:#ff6b6b"></i>
             </div>
         </div>
 
         <div class="sidebar">
-            <button class="tool-btn" onclick="window.addFurniture('box')"><i class="fa-solid fa-chair"></i></button>
-            <button class="tool-btn" onclick="window.addFurniture('cylinder')"><i class="fa-solid fa-table"></i></button>
-            <button class="tool-btn" onclick="window.addFurniture('sphere')"><i class="fa-regular fa-lightbulb"></i></button>
+            <button class="tool-btn" onclick="window.addFurniture('box')" data-tooltip="Ghế"><i class="fa-solid fa-chair"></i></button>
+            <button class="tool-btn" onclick="window.addFurniture('cylinder')" data-tooltip="Bàn"><i class="fa-solid fa-table"></i></button>
+            <button class="tool-btn" onclick="window.addFurniture('sphere')" data-tooltip="Đèn"><i class="fa-regular fa-lightbulb"></i></button>
             <div style="height:1px; background:rgba(255,255,255,0.2); margin:10px 0"></div>
-            <button class="tool-btn" id="btn-save"><i class="fa-solid fa-floppy-disk" style="color:#2ecc71"></i></button>
-            <button class="tool-btn" id="btn-load"><i class="fa-solid fa-cloud-arrow-down" style="color:#f1c40f"></i></button>
-        </div>
-
-        <div id="admin-panel" class="hidden">
-            <h3><i class="fa-solid fa-shield-halved"></i> Admin Dashboard</h3>
-            <p style="font-size:0.8em; color:#aaa">Manage users & designs</p>
-            <div class="user-list" id="admin-user-list">
-                </div>
-            <button id="refresh-admin" style="width:100%; margin-top:10px; padding:5px; background:#444; color:white; border:none; cursor:pointer">Refresh Data</button>
+            <button class="tool-btn" id="btn-save" data-tooltip="Lưu"><i class="fa-solid fa-floppy-disk" style="color:#2ecc71"></i></button>
+            <button class="tool-btn" id="btn-load" data-tooltip="Tải"><i class="fa-solid fa-cloud-arrow-down" style="color:#f1c40f"></i></button>
         </div>
     </div>
 
     <script type="module" src="/src/main.js"></script>
 </body>
+</html>

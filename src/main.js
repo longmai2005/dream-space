@@ -1,10 +1,8 @@
+import './style.css'; 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { loginWithGoogle, logoutUser, saveDesignToCloud, loadDesignFromCloud } from './firebase-config.js';
-
-let currentUser = null; // Biến lưu thông tin người dùng
 
 import { 
     loginWithGoogle, 
@@ -12,156 +10,131 @@ import {
     registerWithEmail, 
     logoutUser, 
     saveDesignToCloud, 
-    loadDesignFromCloud,
-    getUserRole,    // <-- Hàm mới
-    getAllUsers     // <-- Hàm mới
+    loadDesignFromCloud 
 } from './firebase-config.js';
+
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+
 let currentUser = null;
-let isRegisterMode = false; // Trạng thái đang ở màn Login hay Register
+let isRegisterMode = false;
 
-// --- 1. XỬ LÝ LOGIC ĐĂNG NHẬP / ĐĂNG KÝ ---
+// --- 1. XỬ LÝ CHUYỂN TRANG (HOMEPAGE -> LOGIN -> APP) ---
+const homepage = document.getElementById('homepage');
+const loginOverlay = document.getElementById('login-overlay');
+const mainUi = document.getElementById('main-ui');
 
-// Chuyển đổi qua lại giữa Login và Register
-document.getElementById('toggle-mode').addEventListener('click', () => {
-    isRegisterMode = !isRegisterMode;
-    const title = document.getElementById('form-title');
-    const btn = document.getElementById('btn-submit');
-    const toggle = document.getElementById('toggle-mode');
-    
-    if (isRegisterMode) {
-        title.innerText = "Create Account";
-        btn.innerText = "Register";
-        toggle.innerText = "Already have an account? Sign In";
-    } else {
-        title.innerText = "Welcome Back";
-        btn.innerText = "Sign In";
-        toggle.innerText = "Don't have an account? Register";
-    }
-});
-
-// Xử lý nút Submit (Email/Pass)
-document.getElementById('btn-submit').addEventListener('click', async () => {
-    const email = document.getElementById('email-input').value;
-    const pass = document.getElementById('pass-input').value;
-    
-    if(!email || !pass) { alert("Please enter email and password"); return; }
-
-    try {
-        let user;
-        if (isRegisterMode) {
-            user = await registerWithEmail(email, pass);
-            alert("Đăng ký thành công! Hãy trải nghiệm.");
-        } else {
-            user = await loginWithEmail(email, pass);
-        }
-        handleLoginSuccess(user);
-    } catch (error) {
-        alert("Lỗi: " + error.message);
-    }
-});
-
-// Xử lý nút Google
-document.getElementById('btn-google').addEventListener('click', async () => {
-    const user = await loginWithGoogle();
-    if (user) handleLoginSuccess(user);
-});
-
-// HÀM XỬ LÝ KHI ĐĂNG NHẬP THÀNH CÔNG (User hoặc Admin)
-async function handleLoginSuccess(user) {
-    currentUser = user;
-    document.getElementById('login-overlay').style.display = 'none';
-    document.getElementById('main-ui').classList.remove('hidden');
-    document.getElementById('user-display').innerText = user.email.split('@')[0];
-
-    // Kiểm tra quyền Admin
-    const role = await getUserRole(user.uid);
-    if (role === 'admin') {
-        document.getElementById('admin-panel').classList.remove('hidden');
-        loadAdminData(); // Tải danh sách user
+// Hàm hiển thị màn hình Login
+function showLogin() {
+    if(homepage) homepage.classList.add('hidden');
+    if(loginOverlay) {
+        loginOverlay.classList.remove('hidden');
+        loginOverlay.style.display = 'flex'; 
     }
 }
 
-// Logic Admin: Tải danh sách User
-async function loadAdminData() {
-    const listContainer = document.getElementById('admin-user-list');
-    listContainer.innerHTML = '<p>Loading...</p>';
+// Hàm hiển thị App chính (3D)
+function showMainApp(user) {
+    currentUser = user;
+    if(homepage) homepage.classList.add('hidden');
+    if(loginOverlay) loginOverlay.classList.add('hidden');
+    if(mainUi) mainUi.classList.remove('hidden');
     
-    const users = await getAllUsers();
-    listContainer.innerHTML = ''; // Xóa loading
+    let displayName = user.email.split('@')[0]; 
+    if(user.displayName) displayName = user.displayName;
+    const userDisplay = document.getElementById('user-display');
+    if(userDisplay) userDisplay.innerText = displayName;
+}
 
-    users.forEach(u => {
-        const div = document.createElement('div');
-        div.className = 'user-item';
-        // Nếu là admin thì tô đỏ
-        const badgeClass = u.role === 'admin' ? 'role-badge role-admin' : 'role-badge';
-        
-        div.innerHTML = `
-            <div>
-                <div style="font-weight:bold">${u.email}</div>
-                <div style="color:#aaa; font-size:0.8em">ID: ${u.id.substr(0, 5)}...</div>
-            </div>
-            <span class="${badgeClass}">${u.role}</span>
-        `;
-        listContainer.appendChild(div);
+// Bắt sự kiện nút "Bắt đầu"
+const btnStartNav = document.getElementById('btn-start-nav');
+if(btnStartNav) btnStartNav.addEventListener('click', () => checkAuthAndRedirect());
+
+const btnStartHero = document.getElementById('btn-start-hero');
+if(btnStartHero) btnStartHero.addEventListener('click', () => checkAuthAndRedirect());
+
+const auth = getAuth();
+function checkAuthAndRedirect() {
+    if (auth.currentUser) {
+        showMainApp(auth.currentUser);
+    } else {
+        showLogin();
+    }
+}
+
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        currentUser = user; 
+    }
+});
+
+// --- 2. XỬ LÝ FORM LOGIN ---
+const toggleBtn = document.getElementById('toggle-mode');
+const submitBtn = document.getElementById('btn-submit');
+const title = document.getElementById('form-title');
+const subtitle = document.getElementById('form-subtitle');
+
+if(toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+        isRegisterMode = !isRegisterMode;
+        if (isRegisterMode) {
+            title.innerText = "Đăng ký";
+            subtitle.innerText = "Tạo tài khoản mới miễn phí";
+            submitBtn.innerText = "Đăng ký ngay";
+            toggleBtn.innerText = "Đã có tài khoản? Đăng nhập";
+        } else {
+            title.innerText = "Đăng nhập";
+            subtitle.innerText = "Để lưu trữ các bản thiết kế của bạn";
+            submitBtn.innerText = "Vào thiết kế";
+            toggleBtn.innerText = "Chưa có tài khoản? Đăng ký ngay";
+        }
     });
 }
 
-document.getElementById('refresh-admin').addEventListener('click', loadAdminData);
-document.getElementById('btn-logout').addEventListener('click', () => { logoutUser(); location.reload(); });
-
-// --- PHẦN 1: XỬ LÝ ĐĂNG NHẬP / UI ---
-document.getElementById('btn-login').addEventListener('click', async () => {
-    const user = await loginWithGoogle();
-    if (user) {
-        currentUser = user;
-        document.getElementById('login-overlay').style.display = 'none';
-        document.getElementById('main-ui').classList.remove('hidden');
-        document.getElementById('user-display').innerText = user.displayName;
-    }
-});
-
-document.getElementById('btn-logout').addEventListener('click', () => {
-    logoutUser();
-    location.reload();
-});
-
-// Nút LƯU thiết kế
-document.getElementById('btn-save').addEventListener('click', () => {
-    if (!currentUser) return;
-    
-    // Tạo danh sách dữ liệu để lưu
-    const designData = objects.map(obj => ({
-        type: obj.userData.type, // Lưu loại (ghế, bàn...)
-        position: { x: obj.position.x, y: obj.position.y, z: obj.position.z },
-        rotation: { x: obj.rotation.x, y: obj.rotation.y, z: obj.rotation.z },
-        scale: { x: obj.scale.x, y: obj.scale.y, z: obj.scale.z }
-    }));
-    
-    saveDesignToCloud(currentUser.uid, designData);
-});
-
-// Nút TẢI thiết kế
-document.getElementById('btn-load').addEventListener('click', async () => {
-    if (!currentUser) return;
-    const data = await loadDesignFromCloud(currentUser.uid);
-    if (data) {
-        // Xóa hết đồ cũ
-        objects.forEach(obj => scene.remove(obj));
-        objects.length = 0;
-        transformControl.detach();
+if(submitBtn) {
+    submitBtn.addEventListener('click', async () => {
+        const username = document.getElementById('email-input').value.trim();
+        let pass = document.getElementById('pass-input').value;
         
-        // Tạo lại đồ từ dữ liệu đã lưu
-        data.forEach(item => {
-            createFurniture(item.type, item.position, item.rotation, item.scale);
-        });
-        alert("Đã tải thiết kế của bạn!");
-    } else {
-        alert("Chưa tìm thấy thiết kế nào đã lưu.");
-    }
-});
+        if(!username || !pass) { alert("Vui lòng nhập đầy đủ thông tin!"); return; }
 
+        const fakeEmail = username.includes('@') ? username : username + "@dream.app";
+        if(pass === "123") pass = "123123"; 
 
-// --- PHẦN 2: 3D SCENE (Giữ nguyên logic chuẩn) ---
+        try {
+            let user;
+            if (isRegisterMode) {
+                user = await registerWithEmail(fakeEmail, pass);
+                alert("Đăng ký thành công!");
+            } else {
+                user = await loginWithEmail(fakeEmail, pass);
+            }
+            if(user) showMainApp(user);
+        } catch (error) {
+            let msg = error.message;
+            if(msg.includes("user-not-found") || msg.includes("invalid-credential")) msg = "Sai tài khoản hoặc mật khẩu.";
+            if(msg.includes("email-already-in-use")) msg = "Tên đăng nhập đã tồn tại.";
+            alert("Lỗi: " + msg);
+        }
+    });
+}
+
+const btnGoogle = document.getElementById('btn-google');
+if(btnGoogle) {
+    btnGoogle.addEventListener('click', async () => {
+        const user = await loginWithGoogle();
+        if (user) showMainApp(user);
+    });
+}
+
+const btnLogout = document.getElementById('btn-logout');
+if(btnLogout) {
+    btnLogout.addEventListener('click', () => { 
+        logoutUser(); 
+        window.location.reload(); 
+    });
+}
+
+// --- 3. 3D SCENE ---
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xdcdcdc);
 
@@ -171,9 +144,9 @@ camera.position.set(5, 5, 5);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
-document.getElementById('canvas-container').appendChild(renderer.domElement);
+const container = document.getElementById('canvas-container');
+if(container) container.appendChild(renderer.domElement);
 
-// Sàn & Lưới
 const gridHelper = new THREE.GridHelper(10, 10);
 scene.add(gridHelper);
 const plane = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.MeshStandardMaterial({ color: 0xeeeeee }));
@@ -181,14 +154,12 @@ plane.rotation.x = -Math.PI / 2;
 plane.receiveShadow = true;
 scene.add(plane);
 
-// Ánh sáng
 const dirLight = new THREE.DirectionalLight(0xffffff, 1);
 dirLight.position.set(5, 10, 7);
 dirLight.castShadow = true;
 scene.add(dirLight);
 scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-// Controls
 const orbit = new OrbitControls(camera, renderer.domElement);
 const transformControl = new TransformControls(camera, renderer.domElement);
 transformControl.addEventListener('dragging-changed', (e) => orbit.enabled = !e.value);
@@ -198,8 +169,7 @@ const objects = [];
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
-// Hàm tạo đồ nội thất (Dùng chung cho lúc click và lúc load data)
-function createFurniture(type, pos = {x:0,y:0.5,z:0}, rot = {x:0,y:0,z:0}, scl = {x:1,y:1,z:1}) {
+window.addFurniture = (type) => {
     let geometry;
     if (type === 'box') geometry = new THREE.BoxGeometry(1, 1, 1);
     else if (type === 'cylinder') geometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 32);
@@ -207,25 +177,16 @@ function createFurniture(type, pos = {x:0,y:0.5,z:0}, rot = {x:0,y:0,z:0}, scl =
 
     const material = new THREE.MeshStandardMaterial({ color: Math.random() * 0xffffff });
     const mesh = new THREE.Mesh(geometry, material);
-    
-    mesh.position.set(pos.x, pos.y, pos.z);
-    mesh.rotation.set(rot.x, rot.y, rot.z);
-    mesh.scale.set(scl.x, scl.y, scl.z);
-    
+    mesh.position.set(0, 0.5, 0);
     mesh.castShadow = true;
     mesh.receiveShadow = true;
-    mesh.userData.type = type; // Lưu loại để sau này Save/Load biết nó là cái gì
+    mesh.userData.type = type;
 
     scene.add(mesh);
     objects.push(mesh);
     transformControl.attach(mesh);
-    return mesh;
-}
+};
 
-// Expose hàm ra window để nút HTML gọi được
-window.addFurniture = (type) => createFurniture(type);
-
-// Click chọn vật thể
 renderer.domElement.addEventListener('pointerdown', (event) => {
     if (event.button !== 0) return;
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -236,9 +197,8 @@ renderer.domElement.addEventListener('pointerdown', (event) => {
     else transformControl.detach();
 });
 
-// Phím tắt
 window.addEventListener('keydown', (e) => {
-    if(e.key === 'Delete' && transformControl.object) {
+    if((e.key === 'Delete' || e.key === 'Backspace') && transformControl.object) {
         const obj = transformControl.object;
         scene.remove(obj);
         objects.splice(objects.indexOf(obj), 1);
@@ -246,12 +206,42 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
-// Resize
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+const btnSave = document.getElementById('btn-save');
+if(btnSave) {
+    btnSave.addEventListener('click', () => {
+        if (!currentUser) return;
+        const designData = objects.map(obj => ({
+            type: obj.userData.type,
+            position: obj.position,
+            rotation: obj.rotation,
+            scale: obj.scale
+        }));
+        saveDesignToCloud(currentUser.uid, designData);
+    });
+}
+
+const btnLoad = document.getElementById('btn-load');
+if(btnLoad) {
+    btnLoad.addEventListener('click', async () => {
+        if (!currentUser) return;
+        const data = await loadDesignFromCloud(currentUser.uid);
+        if (data) {
+            objects.forEach(obj => scene.remove(obj));
+            objects.length = 0;
+            transformControl.detach();
+            data.forEach(item => { window.addFurniture(item.type); });
+            alert("Đã tải thiết kế!");
+        } else {
+            alert("Chưa có bản lưu nào.");
+        }
+    });
+}
 
 function animate() {
     requestAnimationFrame(animate);

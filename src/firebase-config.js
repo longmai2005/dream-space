@@ -4,8 +4,8 @@ import {
     GoogleAuthProvider, 
     signInWithPopup, 
     signOut,
-    createUserWithEmailAndPassword, // Hàm đăng ký mới
-    signInWithEmailAndPassword      // Hàm đăng nhập mới
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword      
 } from "firebase/auth";
 import { 
     getFirestore, 
