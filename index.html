@@ -1,93 +1,102 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DreamSpace - Thiết kế ngôi nhà mơ ước</title>
+    <title>DreamSpace Studio</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="./src/style.css" />
 </head>
 <body>
     <div id="homepage">
         <nav class="navbar">
-            <div class="logo">🏠 DreamSpace</div>
-            <button id="btn-start-nav" class="nav-btn">Bắt đầu ngay</button>
+            <div class="logo"><i class="fa-solid fa-cube"></i> DreamSpace</div>
+            <button id="btn-start-nav" class="nav-btn">Bắt đầu thiết kế</button>
         </nav>
         
         <div class="hero-section">
             <div class="hero-content">
-                <h1>Thiết kế không gian sống <br><span>theo cách của bạn</span></h1>
-                <p>Công cụ thiết kế nội thất 3D trực tuyến đơn giản, trực quan và miễn phí. Kéo thả ý tưởng, hiện thực hóa giấc mơ.</p>
+                <h1>Kiến tạo không gian <br><span>trong tầm tay</span></h1>
+                <p>Công cụ 3D trực quan, miễn phí và mạnh mẽ.</p>
                 <button id="btn-start-hero" class="cta-btn">Thiết kế ngay <i class="fa-solid fa-arrow-right"></i></button>
-            </div>
-            <div class="hero-image">
-                <i class="fa-solid fa-cube fa-spin" style="--fa-animation-duration: 10s;"></i>
-            </div>
-        </div>
-
-        <div class="features-section">
-            <div class="feature-card">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
-                <h3>Kéo & Thả</h3>
-                <p>Sắp xếp nội thất dễ dàng.</p>
-            </div>
-            <div class="feature-card">
-                <i class="fa-solid fa-cloud-arrow-up"></i>
-                <h3>Lưu trữ đám mây</h3>
-                <p>Truy cập từ bất kỳ đâu.</p>
-            </div>
-            <div class="feature-card">
-                <i class="fa-brands fa-google"></i>
-                <h3>Đăng nhập nhanh</h3>
-                <p>Google & Tài khoản riêng.</p>
             </div>
         </div>
     </div>
 
     <div id="login-overlay" class="hidden">
         <div class="login-card">
-            <div class="back-btn" onclick="window.location.reload()"><i class="fa-solid fa-arrow-left"></i> Quay lại</div>
-            <div style="font-size: 3em; margin-bottom: 5px;">🎨</div>
-            <h1 id="form-title">Đăng nhập</h1>
-            <p id="form-subtitle">Để lưu trữ thiết kế của bạn</p>
-            
+            <div class="back-btn" onclick="window.location.reload()"><i class="fa-solid fa-arrow-left"></i></div>
+            <h2>Đăng nhập</h2>
             <div class="auth-form">
-                <input type="text" id="email-input" class="input-field" placeholder="Username (Tên đăng nhập)">
-                <input type="password" id="pass-input" class="input-field" placeholder="Password (Mật khẩu)">
-                
-                <button id="btn-submit" class="action-btn btn-primary">Vào thiết kế</button>
-                
-                <div style="display:flex; align-items:center; justify-content:space-between; color:rgba(255,255,255,0.5); font-size:0.8em">
-                    <span>HOẶC</span>
-                </div>
-
-                <button id="btn-google" class="action-btn btn-google">
-                    <i class="fa-brands fa-google" style="color:#ea4335"></i> Google
-                </button>
+                <input type="text" id="email-input" class="input-field" placeholder="Tên đăng nhập">
+                <input type="password" id="pass-input" class="input-field" placeholder="Mật khẩu">
+                <button id="btn-submit" class="action-btn btn-primary">Vào Studio</button>
+                <div class="divider"><span>HOẶC</span></div>
+                <button id="btn-google" class="action-btn btn-google"><i class="fa-brands fa-google"></i> Google</button>
             </div>
-            <p class="toggle-text" id="toggle-mode">Chưa có tài khoản? Đăng ký ngay</p>
+            <p class="toggle-text" id="toggle-mode">Tạo tài khoản mới</p>
         </div>
     </div>
 
     <div id="canvas-container"></div>
 
     <div id="main-ui" class="hidden">
-        <div class="top-bar">
-            <h2>DREAM<span style="color:#4a90e2">SPACE</span></h2>
-            <div class="user-profile">
-                <i class="fa-solid fa-user-astronaut"></i>
-                <span id="user-display">User</span>
-                <i class="fa-solid fa-right-from-bracket" id="btn-logout" title="Đăng xuất" style="margin-left:10px; cursor:pointer; color:#ff6b6b"></i>
+        <div class="studio-header">
+            <div class="header-left">
+                <div class="app-name"><i class="fa-solid fa-layer-group"></i> DreamSpace <span>PRO</span></div>
+                <div class="menu-bar">
+                    <button class="menu-item" id="btn-save"><i class="fa-solid fa-floppy-disk"></i> Lưu</button>
+                    <button class="menu-item" id="btn-load"><i class="fa-solid fa-folder-open"></i> Mở</button>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <div class="user-info">
+                    <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                    <span id="user-display">Architect</span>
+                </div>
+                <button id="btn-logout" class="logout-btn"><i class="fa-solid fa-power-off"></i> Thoát</button>
             </div>
         </div>
 
-        <div class="sidebar">
-            <button class="tool-btn" onclick="window.addFurniture('box')" data-tooltip="Ghế"><i class="fa-solid fa-chair"></i></button>
-            <button class="tool-btn" onclick="window.addFurniture('cylinder')" data-tooltip="Bàn"><i class="fa-solid fa-table"></i></button>
-            <button class="tool-btn" onclick="window.addFurniture('sphere')" data-tooltip="Đèn"><i class="fa-regular fa-lightbulb"></i></button>
-            <div style="height:1px; background:rgba(255,255,255,0.2); margin:10px 0"></div>
-            <button class="tool-btn" id="btn-save" data-tooltip="Lưu"><i class="fa-solid fa-floppy-disk" style="color:#2ecc71"></i></button>
-            <button class="tool-btn" id="btn-load" data-tooltip="Tải"><i class="fa-solid fa-cloud-arrow-down" style="color:#f1c40f"></i></button>
+        <div class="studio-toolbar">
+            <div class="toolbar-title">Thư viện</div>
+            <button class="tool-btn" onclick="window.addFurniture('box')">
+                <i class="fa-solid fa-couch"></i> <span>Ghế Sofa</span>
+            </button>
+            <button class="tool-btn" onclick="window.addFurniture('cylinder')">
+                <i class="fa-solid fa-table"></i> <span>Bàn Trà</span>
+            </button>
+            <button class="tool-btn" onclick="window.addFurniture('sphere')">
+                <i class="fa-solid fa-lightbulb"></i> <span>Đèn Trần</span>
+            </button>
+        </div>
+
+        <div class="studio-properties" id="prop-panel">
+            <div class="panel-header">Thuộc tính</div>
+            <div id="prop-content" style="opacity: 0.5; text-align: center; margin-top: 20px;">
+                <p>Chọn một vật thể<br>để xem chi tiết</p>
+            </div>
+            <div id="prop-details" class="hidden">
+                <div class="prop-group">
+                    <label>Loại:</label> <span id="prop-type" style="font-weight: bold; color: #4a90e2">--</span>
+                </div>
+                <div class="prop-group">
+                    <label>Màu sắc:</label> 
+                    <div id="prop-color" style="width: 20px; height: 20px; display: inline-block; border-radius: 4px; border: 1px solid #fff;"></div>
+                </div>
+                <div class="prop-group">
+                    <label>Vị trí X:</label> <span id="prop-x">0.00</span>
+                </div>
+                <div class="prop-group">
+                    <label>Vị trí Z:</label> <span id="prop-z">0.00</span>
+                </div>
+                <button id="btn-delete-obj" class="delete-btn"><i class="fa-solid fa-trash"></i> Xóa vật thể</button>
+            </div>
+        </div>
+        
+        <div class="controls-hint">
+            <i class="fa-solid fa-mouse"></i> Chuột trái: Chọn | Chuột phải: Xoay | T: Di chuyển | R: Xoay
         </div>
     </div>
 

@@ -1,110 +1,57 @@
-/* Import font Roboto từ Google Fonts (Hỗ trợ tiếng Việt tốt nhất) */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 
-body { 
-    margin: 0; 
-    overflow: hidden; 
-    /* Ưu tiên Roboto, nếu lỗi sẽ dùng Segoe UI (Windows) hoặc San Francisco (Mac) */
-    font-family: 'Roboto', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; 
-    background: #121212; 
-    color: white; 
-}
-
+body { margin: 0; overflow: hidden; font-family: 'Roboto', sans-serif; background: #1e1e1e; color: #e0e0e0; }
 .hidden { display: none !important; }
 
-/* --- HOMEPAGE STYLES --- */
-#homepage {
-    position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-    z-index: 2000; display: flex; flex-direction: column; overflow-y: auto;
-}
-
-.navbar {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 20px 50px; background: rgba(0,0,0,0.2); backdrop-filter: blur(10px);
-}
-.logo { font-size: 1.5em; font-weight: 700; letter-spacing: 1px; }
-.nav-btn {
-    padding: 10px 25px; border: 2px solid #4a90e2; background: transparent;
-    color: #4a90e2; border-radius: 30px; cursor: pointer; font-weight: 600; transition: 0.3s;
-}
+/* HOMEPAGE & LOGIN */
+#homepage { position: absolute; top:0; width:100%; height:100%; background: linear-gradient(135deg, #141e30, #243b55); z-index: 2000; display: flex; flex-direction: column; }
+.navbar { padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); }
+.logo { font-size: 1.4em; font-weight: 700; color: white; letter-spacing: 1px; }
+.nav-btn, .cta-btn { padding: 10px 25px; border-radius: 4px; border: none; font-weight: 500; cursor: pointer; transition: 0.2s; }
+.nav-btn { background: transparent; border: 1px solid #4a90e2; color: #4a90e2; }
 .nav-btn:hover { background: #4a90e2; color: white; }
+.hero-section { flex: 1; display: flex; align-items: center; padding: 0 100px; }
+.hero-content h1 { font-size: 3.5em; margin-bottom: 20px; line-height: 1.2; }
+.hero-content span { color: #4a90e2; }
+.cta-btn { background: #4a90e2; color: white; font-size: 1.1em; margin-top: 20px; }
 
-.hero-section {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 100px; flex: 1; min-height: 60vh;
-}
-.hero-content { max-width: 600px; animation: slideUp 1s ease-out; }
-.hero-content h1 { font-size: 3.5em; line-height: 1.2; margin-bottom: 20px; font-weight: 700; }
-.hero-content h1 span { color: #4a90e2; }
-.hero-content p { font-size: 1.1em; color: #ccc; margin-bottom: 40px; line-height: 1.6; }
-
-.cta-btn {
-    padding: 15px 40px; background: #ea4335; color: white; border: none;
-    border-radius: 50px; font-size: 1.2em; font-weight: bold; cursor: pointer;
-    box-shadow: 0 10px 20px rgba(234, 67, 53, 0.3); transition: 0.3s;
-}
-.cta-btn:hover { transform: translateY(-5px); box-shadow: 0 15px 25px rgba(234, 67, 53, 0.5); }
-
-.hero-image { font-size: 15em; color: rgba(255,255,255,0.05); }
-
-.features-section {
-    display: flex; gap: 30px; padding: 50px 100px; background: rgba(0,0,0,0.3);
-    justify-content: center;
-}
-.feature-card {
-    background: rgba(255,255,255,0.05); padding: 30px; border-radius: 20px;
-    text-align: center; width: 250px; transition: 0.3s; border: 1px solid rgba(255,255,255,0.1);
-}
-.feature-card:hover { transform: translateY(-10px); background: rgba(255,255,255,0.1); }
-.feature-card i { font-size: 2.5em; color: #4a90e2; margin-bottom: 20px; }
-.feature-card h3 { font-weight: 600; margin-bottom: 10px; }
-
-@keyframes slideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
-
-/* --- LOGIN & HUD --- */
-#login-overlay {
-    position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
-    display: flex; justify-content: center; align-items: center; z-index: 3000;
-}
-.login-card {
-    background: #1e1e1e; padding: 40px; border-radius: 24px; width: 350px;
-    text-align: center; border: 1px solid #333; position: relative;
-}
-.back-btn { position: absolute; top: 20px; left: 20px; cursor: pointer; color: #888; font-size: 0.9em; }
-.back-btn:hover { color: white; }
-
-.auth-form { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
-.input-field {
-    padding: 12px 15px; background: #2a2a2a; border: 1px solid #444;
-    border-radius: 8px; color: white; outline: none; font-family: inherit; /* Kế thừa font Roboto */
-}
-.input-field:focus { border-color: #4a90e2; }
-.action-btn { padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: inherit; }
+#login-overlay { position: absolute; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 3000; display: flex; align-items: center; justify-content: center; }
+.login-card { background: #252526; padding: 40px; width: 350px; border-radius: 8px; border: 1px solid #333; text-align: center; position: relative; }
+.input-field { width: 90%; padding: 12px; margin: 10px 0; background: #333; border: 1px solid #444; color: white; border-radius: 4px; outline: none; }
+.action-btn { width: 100%; padding: 12px; margin-top: 10px; border-radius: 4px; border: none; cursor: pointer; font-weight: 500; }
 .btn-primary { background: #4a90e2; color: white; }
-.btn-google { background: white; color: #333; display: flex; align-items: center; justify-content: center; gap: 10px; }
-.toggle-text { font-size: 0.8em; margin-top: 15px; cursor: pointer; color: #888; text-decoration: underline; }
+.btn-google { background: white; color: #333; }
+.divider { margin: 20px 0; font-size: 0.8em; color: #666; }
 
-#main-ui { pointer-events: none; width: 100%; height: 100%; position: absolute; top:0; left:0; }
+/* STUDIO UI */
+#main-ui { position: absolute; width:100%; height:100%; top:0; left:0; pointer-events: none; }
 #main-ui * { pointer-events: auto; }
-.top-bar {
-    position: absolute; top: 0; width: 100%; height: 70px;
-    display: flex; justify-content: space-between; align-items: center; padding: 0 30px;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
-}
-.sidebar {
-    position: absolute; right: 20px; top: 80px; width: 60px;
-    background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); border-radius: 15px;
-    padding: 15px 10px; display: flex; flex-direction: column; gap: 15px; align-items: center;
-}
-.tool-btn {
-    width: 45px; height: 45px; border-radius: 12px; border: none;
-    background: rgba(255,255,255,0.1); color: #aaa; font-size: 1.2em; cursor: pointer;
-}
-.tool-btn:hover { background: #4a90e2; color: white; }
-.tool-btn:hover::after {
-    content: attr(data-tooltip); position: absolute; right: 65px;
-    background: black; color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.8em; white-space: nowrap;
-    font-family: 'Roboto', sans-serif;
-}
+
+.studio-header { position: absolute; top: 0; width: 100%; height: 50px; background: #2d2d2d; border-bottom: 1px solid #111; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-sizing: border-box; }
+.header-left { display: flex; align-items: center; gap: 30px; }
+.app-name { font-weight: 700; color: #ccc; }
+.app-name span { background: #4a90e2; padding: 2px 5px; font-size: 0.7em; border-radius: 3px; color: white; margin-left: 5px; }
+.menu-item { background: none; border: none; color: #aaa; cursor: pointer; font-size: 0.9em; display: flex; gap: 5px; align-items: center; }
+.menu-item:hover { color: white; }
+
+.header-right { display: flex; align-items: center; gap: 20px; }
+.user-info { display: flex; align-items: center; gap: 10px; font-size: 0.9em; }
+.avatar { width: 25px; height: 25px; background: #555; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8em; }
+.logout-btn { background: #c0392b; color: white; border: none; padding: 5px 15px; border-radius: 3px; cursor: pointer; font-size: 0.85em; display: flex; align-items: center; gap: 5px; }
+.logout-btn:hover { background: #e74c3c; }
+
+.studio-toolbar { position: absolute; top: 50px; left: 0; bottom: 0; width: 70px; background: #252526; border-right: 1px solid #111; display: flex; flex-direction: column; align-items: center; padding-top: 10px; }
+.toolbar-title { font-size: 0.7em; color: #666; margin-bottom: 10px; text-transform: uppercase; }
+.tool-btn { width: 50px; height: 50px; background: #333; border: 1px solid #444; border-radius: 5px; color: #ccc; margin-bottom: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
+.tool-btn i { font-size: 1.2em; }
+.tool-btn span { font-size: 0.6em; }
+.tool-btn:hover { background: #4a90e2; border-color: #4a90e2; color: white; }
+
+.studio-properties { position: absolute; top: 50px; right: 0; bottom: 0; width: 220px; background: #252526; border-left: 1px solid #111; padding: 15px; }
+.panel-header { font-size: 0.9em; font-weight: 700; color: #888; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; text-transform: uppercase; }
+.prop-group { margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; }
+.prop-group label { color: #888; }
+.delete-btn { width: 100%; padding: 8px; background: #333; border: 1px solid #c0392b; color: #c0392b; border-radius: 4px; cursor: pointer; margin-top: 20px; }
+.delete-btn:hover { background: #c0392b; color: white; }
+
+.controls-hint { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); padding: 5px 15px; border-radius: 20px; font-size: 0.8em; color: #aaa; }
