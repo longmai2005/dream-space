@@ -18,7 +18,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 let currentUser = null;
 let isRegisterMode = false;
 
-// --- 1. QUẢN LÝ CHUYỂN CẢNH (NAVIGATION) ---
+// --- 1. NAVIGATION ---
 const homepage = document.getElementById('homepage');
 const loginOverlay = document.getElementById('login-overlay');
 const mainUi = document.getElementById('main-ui');
@@ -37,14 +37,12 @@ function showMainApp(user) {
     if(loginOverlay) loginOverlay.classList.add('hidden');
     if(mainUi) mainUi.classList.remove('hidden');
     
-    // Cập nhật tên người dùng trên Header
     let displayName = user.email.split('@')[0]; 
     if(user.displayName) displayName = user.displayName;
     const userDisplay = document.getElementById('user-display');
     if(userDisplay) userDisplay.innerText = displayName;
 }
 
-// Bắt sự kiện nút trên Homepage
 const btnStartNav = document.getElementById('btn-start-nav');
 if(btnStartNav) btnStartNav.addEventListener('click', () => checkAuthAndRedirect());
 const btnStartHero = document.getElementById('btn-start-hero');
@@ -56,16 +54,11 @@ function checkAuthAndRedirect() {
     else showLogin();
 }
 
-// Tự động giữ đăng nhập khi F5
 onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        currentUser = user;
-        // Nếu muốn F5 vào thẳng app thì bỏ comment dòng dưới:
-        // showMainApp(user); 
-    }
+    if (user) currentUser = user;
 });
 
-// --- 2. XỬ LÝ LOGIN / REGISTER ---
+// --- 2. AUTHENTICATION ---
 const toggleBtn = document.getElementById('toggle-mode');
 const submitBtn = document.getElementById('btn-submit');
 
@@ -73,9 +66,7 @@ if(toggleBtn) {
     toggleBtn.addEventListener('click', () => {
         isRegisterMode = !isRegisterMode;
         toggleBtn.innerText = isRegisterMode ? "Đã có tài khoản? Đăng nhập" : "Tạo tài khoản mới";
-        // Cập nhật tiêu đề form
-        const formTitle = document.querySelector('.login-card h2');
-        if(formTitle) formTitle.innerText = isRegisterMode ? "Đăng ký" : "Đăng nhập";
+        document.querySelector('.login-card h2').innerText = isRegisterMode ? "Đăng ký" : "Đăng nhập";
         submitBtn.innerText = isRegisterMode ? "Đăng ký ngay" : "Vào Studio";
     });
 }
@@ -85,7 +76,6 @@ if(submitBtn) {
         const username = document.getElementById('email-input').value.trim();
         let pass = document.getElementById('pass-input').value;
         if(!username || !pass) { alert("Vui lòng nhập đủ thông tin"); return; }
-
         const fakeEmail = username.includes('@') ? username : username + "@dream.app";
         if(pass === "123") pass = "123123"; 
 
@@ -111,7 +101,6 @@ if(btnGoogle) {
     });
 }
 
-// NÚT ĐĂNG XUẤT (Logic mới)
 const btnLogout = document.getElementById('btn-logout');
 if(btnLogout) {
     btnLogout.addEventListener('click', () => { 
@@ -120,9 +109,9 @@ if(btnLogout) {
     });
 }
 
-// --- 3. 3D SCENE & PANEL THUỘC TÍNH ---
+// --- 3. 3D SCENE ---
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x2a2a2a); // Màu nền tối Studio
+scene.background = new THREE.Color(0x111111); // Màu nền cực tối để nổi bật giao diện
 
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(5, 5, 5);
@@ -132,26 +121,24 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 const container = document.getElementById('canvas-container');
 if(container) {
-    container.innerHTML = ''; // Xóa canvas cũ nếu có
+    container.innerHTML = '';
     container.appendChild(renderer.domElement);
 }
 
-// Lưới & Sàn
-const gridHelper = new THREE.GridHelper(10, 10, 0x888888, 0x444444);
+// Grid đẹp hơn
+const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
 scene.add(gridHelper);
-const plane = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.MeshStandardMaterial({ color: 0x1a1a1a }));
+const plane = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.MeshStandardMaterial({ color: 0x151515 }));
 plane.rotation.x = -Math.PI / 2;
 plane.receiveShadow = true;
 scene.add(plane);
 
-// Ánh sáng
 const dirLight = new THREE.DirectionalLight(0xffffff, 1);
 dirLight.position.set(5, 10, 7);
 dirLight.castShadow = true;
 scene.add(dirLight);
 scene.add(new THREE.AmbientLight(0xffffff, 0.6));
 
-// Controls
 const orbit = new OrbitControls(camera, renderer.domElement);
 const transformControl = new TransformControls(camera, renderer.domElement);
 transformControl.addEventListener('dragging-changed', (e) => orbit.enabled = !e.value);
@@ -161,7 +148,7 @@ const objects = [];
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
-// -- PANEL LOGIC --
+// -- PANEL UPDATE LOGIC --
 function updatePropertiesPanel(object) {
     const propContent = document.getElementById('prop-content');
     const propDetails = document.getElementById('prop-details');
@@ -228,7 +215,6 @@ renderer.domElement.addEventListener('pointerdown', (event) => {
     }
 });
 
-// Xóa vật thể
 const btnDeleteObj = document.getElementById('btn-delete-obj');
 if(btnDeleteObj) {
     btnDeleteObj.addEventListener('click', () => {

@@ -15,33 +15,26 @@
             </div>
             <div class="nav-links">
                 <a href="#features">Tính năng</a>
-                <a href="#" onclick="alert('Tính năng đang phát triển!')">Cộng đồng</a>
+                <a href="#" onclick="alert('Sắp ra mắt!')">Cộng đồng</a>
                 <button id="btn-start-nav" class="nav-btn primary">Vào Studio</button>
             </div>
         </nav>
         
         <div class="hero-container">
             <div class="hero-content">
-                <div class="badge">✨ Phiên bản 1.0 Đã ra mắt</div>
+                <div class="badge">✨ Phiên bản 1.0</div>
                 <h1>Thiết kế nội thất <br><span class="gradient-text">trong tầm tay bạn</span></h1>
-                <p>Biến ý tưởng thành hiện thực với công cụ thiết kế 3D trực tuyến. Không cần cài đặt, không cần kỹ năng chuyên sâu. Kéo, thả và tận hưởng thành quả.</p>
+                <p>Biến ý tưởng thành hiện thực với công cụ thiết kế 3D trực tuyến. Không cần cài đặt. Kéo, thả và tận hưởng.</p>
                 <div class="hero-actions">
                     <button id="btn-start-hero" class="cta-btn">Bắt đầu miễn phí <i class="fa-solid fa-arrow-right"></i></button>
                     <button class="secondary-btn"><i class="fa-solid fa-play"></i> Xem Demo</button>
-                </div>
-                <div class="stats">
-                    <div class="stat-item"><strong>100+</strong> <br>Mẫu nội thất</div>
-                    <div class="stat-item"><strong>Free</strong> <br>Trọn đời</div>
-                    <div class="stat-item"><strong>Web</strong> <br>Đa nền tảng</div>
                 </div>
             </div>
             
             <div class="hero-visual">
                 <div class="app-mockup">
                     <div class="mockup-header">
-                        <span class="dot red"></span>
-                        <span class="dot yellow"></span>
-                        <span class="dot green"></span>
+                        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
                     </div>
                     <div class="mockup-body">
                         <div class="sidebar-mock"></div>
@@ -62,24 +55,21 @@
                 <div class="feature-card">
                     <div class="icon-box"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
                     <h3>Dễ dàng sử dụng</h3>
-                    <p>Giao diện kéo thả trực quan, phù hợp cho cả người không chuyên.</p>
+                    <p>Kéo thả trực quan, không cần kỹ năng chuyên sâu.</p>
                 </div>
                 <div class="feature-card">
                     <div class="icon-box"><i class="fa-solid fa-cloud"></i></div>
                     <h3>Lưu trữ đám mây</h3>
-                    <p>Thiết kế của bạn được đồng bộ hóa và truy cập mọi lúc mọi nơi.</p>
+                    <p>Đồng bộ hóa và truy cập mọi lúc mọi nơi.</p>
                 </div>
                 <div class="feature-card">
                     <div class="icon-box"><i class="fa-solid fa-bolt"></i></div>
                     <h3>Hiệu năng cao</h3>
-                    <p>Công nghệ WebGL giúp hiển thị 3D mượt mà ngay trên trình duyệt.</p>
+                    <p>Công nghệ WebGL mượt mà ngay trên trình duyệt.</p>
                 </div>
             </div>
         </div>
-        
-        <footer class="footer">
-            <p>&copy; 2026 DreamSpace Team. All rights reserved.</p>
-        </footer>
+        <footer class="footer"><p>&copy; 2026 DreamSpace Team.</p></footer>
     </div>
 
     <div id="login-overlay" class="hidden">
@@ -100,50 +90,85 @@
     <div id="canvas-container"></div>
 
     <div id="main-ui" class="hidden">
-        <div class="studio-header">
-            <div class="header-left">
-                <div class="app-name"><i class="fa-solid fa-layer-group"></i> DreamSpace <span>PRO</span></div>
-                <div class="menu-bar">
-                    <button class="menu-item" id="btn-save"><i class="fa-solid fa-floppy-disk"></i> Lưu</button>
-                    <button class="menu-item" id="btn-load"><i class="fa-solid fa-folder-open"></i> Mở</button>
-                </div>
+        <div class="floating-header">
+            <div class="fh-left">
+                <div class="fh-logo"><i class="fa-solid fa-layer-group"></i></div>
+                <div class="fh-title">Project: <span>Untitled-1</span></div>
             </div>
-            <div class="header-right">
-                <div class="user-info">
-                    <div class="avatar"><i class="fa-solid fa-user"></i></div>
-                    <span id="user-display">Architect</span>
+            <div class="fh-center">
+                <button class="icon-btn" id="btn-save" title="Lưu"><i class="fa-solid fa-floppy-disk"></i></button>
+                <button class="icon-btn" id="btn-load" title="Mở"><i class="fa-solid fa-folder-open"></i></button>
+                <div class="divider-v"></div>
+                <button class="icon-btn" onclick="alert('Tính năng Undo đang phát triển')" title="Hoàn tác"><i class="fa-solid fa-rotate-left"></i></button>
+                <button class="icon-btn" onclick="alert('Tính năng Redo đang phát triển')" title="Làm lại"><i class="fa-solid fa-rotate-right"></i></button>
+            </div>
+            <div class="fh-right">
+                <div class="user-pill">
+                    <span id="user-display">User</span>
+                    <div class="avatar-circle"><i class="fa-solid fa-user"></i></div>
                 </div>
-                <button id="btn-logout" class="logout-btn"><i class="fa-solid fa-power-off"></i> Thoát</button>
+                <button id="btn-logout" class="logout-mini-btn" title="Đăng xuất"><i class="fa-solid fa-right-from-bracket"></i></button>
             </div>
         </div>
 
-        <div class="studio-toolbar">
-            <div class="toolbar-title">Thư viện</div>
-            <button class="tool-btn" onclick="window.addFurniture('box')">
-                <i class="fa-solid fa-couch"></i> <span>Ghế</span>
+        <div class="floating-toolbar">
+            <div class="ft-label">Thêm</div>
+            <button class="tool-item" onclick="window.addFurniture('box')" title="Ghế Sofa">
+                <i class="fa-solid fa-couch"></i>
             </button>
-            <button class="tool-btn" onclick="window.addFurniture('cylinder')">
-                <i class="fa-solid fa-table"></i> <span>Bàn</span>
+            <button class="tool-item" onclick="window.addFurniture('cylinder')" title="Bàn Trà">
+                <i class="fa-solid fa-table"></i>
             </button>
-            <button class="tool-btn" onclick="window.addFurniture('sphere')">
-                <i class="fa-solid fa-lightbulb"></i> <span>Đèn</span>
+            <button class="tool-item" onclick="window.addFurniture('sphere')" title="Đèn Trần">
+                <i class="fa-solid fa-lightbulb"></i>
             </button>
         </div>
 
-        <div class="studio-properties" id="prop-panel">
-            <div class="panel-header">Thuộc tính</div>
-            <div id="prop-content" style="opacity: 0.5; text-align: center; margin-top: 20px;">
-                <p>Chọn vật thể<br>để xem chi tiết</p>
+        <div class="floating-panel" id="prop-panel">
+            <div class="fp-header">
+                <i class="fa-solid fa-sliders"></i> Thuộc tính
             </div>
+            
+            <div id="prop-content" class="empty-state">
+                <i class="fa-solid fa-arrow-pointer"></i>
+                <p>Chọn vật thể để chỉnh sửa</p>
+            </div>
+
             <div id="prop-details" class="hidden">
-                <div class="prop-group"><label>Loại:</label> <span id="prop-type" style="font-weight:bold;color:#4a90e2">--</span></div>
-                <div class="prop-group"><label>Màu:</label> <div id="prop-color" style="width:20px;height:20px;border-radius:4px;border:1px solid #fff"></div></div>
-                <div class="prop-group"><label>X:</label> <span id="prop-x">0.00</span></div>
-                <div class="prop-group"><label>Z:</label> <span id="prop-z">0.00</span></div>
-                <button id="btn-delete-obj" class="delete-btn"><i class="fa-solid fa-trash"></i> Xóa</button>
+                <div class="prop-row">
+                    <span class="label">Loại</span>
+                    <span class="value" id="prop-type">--</span>
+                </div>
+                <div class="prop-row">
+                    <span class="label">Màu sắc</span>
+                    <div id="prop-color" class="color-preview"></div>
+                </div>
+                
+                <div class="divider-h"></div>
+                
+                <div class="prop-row">
+                    <span class="label">Vị trí X</span>
+                    <span class="value code" id="prop-x">0.00</span>
+                </div>
+                <div class="prop-row">
+                    <span class="label">Vị trí Z</span>
+                    <span class="value code" id="prop-z">0.00</span>
+                </div>
+
+                <div class="divider-h"></div>
+
+                <button id="btn-delete-obj" class="danger-btn">
+                    <i class="fa-solid fa-trash"></i> Xóa vật thể
+                </button>
             </div>
         </div>
-        <div class="controls-hint"><i class="fa-solid fa-mouse"></i> Chuột trái: Chọn | Phải: Xoay | T: Di chuyển | R: Xoay</div>
+        
+        <div class="bottom-hint">
+            <div class="hint-item"><kbd>Left Click</kbd> Chọn</div>
+            <div class="hint-item"><kbd>Right Click</kbd> Xoay Cam</div>
+            <div class="hint-item"><kbd>T</kbd> Di chuyển</div>
+            <div class="hint-item"><kbd>R</kbd> Xoay vật thể</div>
+        </div>
     </div>
 
     <script type="module" src="/src/main.js"></script>
