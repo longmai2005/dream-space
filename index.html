@@ -92,38 +92,35 @@
     <div id="main-ui" class="hidden">
         <div class="floating-header">
             <div class="fh-left">
-                <div class="fh-logo"><i class="fa-solid fa-layer-group"></i></div>
-                <div class="fh-title">Project: <span>Untitled-1</span></div>
-            </div>
-            <div class="fh-center">
-                <button class="icon-btn" id="btn-save" title="Lưu"><i class="fa-solid fa-floppy-disk"></i></button>
-                <button class="icon-btn" id="btn-load" title="Mở"><i class="fa-solid fa-folder-open"></i></button>
-                <div class="divider-v"></div>
-                <button class="icon-btn" onclick="alert('Tính năng Undo đang phát triển')" title="Hoàn tác"><i class="fa-solid fa-rotate-left"></i></button>
-                <button class="icon-btn" onclick="alert('Tính năng Redo đang phát triển')" title="Làm lại"><i class="fa-solid fa-rotate-right"></i></button>
-            </div>
-            <div class="fh-right">
-                <div class="user-pill">
-                    <span id="user-display">User</span>
-                    <div class="avatar-circle"><i class="fa-solid fa-user"></i></div>
-                </div>
-                <button id="btn-logout" class="logout-mini-btn" title="Đăng xuất"><i class="fa-solid fa-right-from-bracket"></i></button>
-            </div>
+            <div class="fh-logo"><i class="fa-solid fa-layer-group"></i></div>
+            <select id="room-selector" class="room-select">
+                <option value="" disabled selected>-- Chọn loại phòng --</option>
+                <option value="livingroom">Phòng Khách</option>
+                <option value="bedroom">Phòng Ngủ</option>
+                <option value="kitchen">Nhà Bếp</option>
+                <option value="empty">Phòng Làm Việc</option>
+            </select>
+        </div>
+    
+        <div class="fh-center">
+            <button class="icon-btn" id="btn-save" title="Lưu"><i class="fa-solid fa-floppy-disk"></i></button>
+            <button class="icon-btn" id="btn-load" title="Mở"><i class="fa-solid fa-folder-open"></i></button>
+            <div class="divider-v"></div>
+            <button class="icon-btn" id="btn-undo" title="Hoàn tác"><i class="fa-solid fa-rotate-left"></i></button>
+            <button class="icon-btn" id="btn-redo" title="Làm lại"><i class="fa-solid fa-rotate-right"></i></button>
         </div>
 
-        <div class="floating-toolbar">
-            <div class="ft-label">Thêm</div>
-            <button class="tool-item" onclick="window.addFurniture('box')" title="Ghế Sofa">
-                <i class="fa-solid fa-couch"></i>
-            </button>
-            <button class="tool-item" onclick="window.addFurniture('cylinder')" title="Bàn Trà">
-                <i class="fa-solid fa-table"></i>
-            </button>
-            <button class="tool-item" onclick="window.addFurniture('sphere')" title="Đèn Trần">
-                <i class="fa-solid fa-lightbulb"></i>
-            </button>
+        <div class="fh-right">
+            <div class="user-pill">
+                <span id="user-display">User</span>
+                <div class="avatar-circle"><i class="fa-solid fa-user"></i></div>
+            </div>
+            <button id="btn-logout" class="logout-mini-btn" title="Đăng xuất"><i class="fa-solid fa-right-from-bracket"></i></button>
         </div>
+    </div>
 
+    <div class="floating-toolbar" id="dynamic-toolbar">
+        </div>
         <div class="floating-panel" id="prop-panel">
             <div class="fp-header">
                 <i class="fa-solid fa-sliders"></i> Thuộc tính

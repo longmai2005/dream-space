@@ -128,3 +128,21 @@ body { margin: 0; overflow: hidden; font-family: 'Inter', sans-serif; background
 .bottom-hint { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; }
 .hint-item { background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); padding: 5px 12px; border-radius: 20px; color: #aaa; font-size: 0.75em; border: 1px solid rgba(255,255,255,0.05); }
 .hint-item kbd { background: rgba(255,255,255,0.1); padding: 1px 4px; border-radius: 3px; color: white; font-family: sans-serif; margin-right: 5px; }
+.room-select {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+    font-size: 0.9em;
+    margin-left: 10px;
+}
+
+.room-select option {
+    background: #1e222a;
+    color: white;
+    padding: 10px;
+}
