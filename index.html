@@ -3,24 +3,83 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DreamSpace Studio</title>
+    <title>DreamSpace - Kiến tạo không gian sống</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="./src/style.css" />
 </head>
 <body>
     <div id="homepage">
         <nav class="navbar">
-            <div class="logo"><i class="fa-solid fa-cube"></i> DreamSpace</div>
-            <button id="btn-start-nav" class="nav-btn">Bắt đầu thiết kế</button>
+            <div class="logo">
+                <i class="fa-solid fa-layer-group"></i> DreamSpace
+            </div>
+            <div class="nav-links">
+                <a href="#features">Tính năng</a>
+                <a href="#" onclick="alert('Tính năng đang phát triển!')">Cộng đồng</a>
+                <button id="btn-start-nav" class="nav-btn primary">Vào Studio</button>
+            </div>
         </nav>
         
-        <div class="hero-section">
+        <div class="hero-container">
             <div class="hero-content">
-                <h1>Kiến tạo không gian <br><span>trong tầm tay</span></h1>
-                <p>Công cụ 3D trực quan, miễn phí và mạnh mẽ.</p>
-                <button id="btn-start-hero" class="cta-btn">Thiết kế ngay <i class="fa-solid fa-arrow-right"></i></button>
+                <div class="badge">✨ Phiên bản 1.0 Đã ra mắt</div>
+                <h1>Thiết kế nội thất <br><span class="gradient-text">trong tầm tay bạn</span></h1>
+                <p>Biến ý tưởng thành hiện thực với công cụ thiết kế 3D trực tuyến. Không cần cài đặt, không cần kỹ năng chuyên sâu. Kéo, thả và tận hưởng thành quả.</p>
+                <div class="hero-actions">
+                    <button id="btn-start-hero" class="cta-btn">Bắt đầu miễn phí <i class="fa-solid fa-arrow-right"></i></button>
+                    <button class="secondary-btn"><i class="fa-solid fa-play"></i> Xem Demo</button>
+                </div>
+                <div class="stats">
+                    <div class="stat-item"><strong>100+</strong> <br>Mẫu nội thất</div>
+                    <div class="stat-item"><strong>Free</strong> <br>Trọn đời</div>
+                    <div class="stat-item"><strong>Web</strong> <br>Đa nền tảng</div>
+                </div>
+            </div>
+            
+            <div class="hero-visual">
+                <div class="app-mockup">
+                    <div class="mockup-header">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                    </div>
+                    <div class="mockup-body">
+                        <div class="sidebar-mock"></div>
+                        <div class="canvas-mock">
+                            <i class="fa-solid fa-cube fa-bounce"></i>
+                            <div class="grid-lines"></div>
+                        </div>
+                        <div class="panel-mock"></div>
+                    </div>
+                </div>
+                <div class="glow-effect"></div>
             </div>
         </div>
+
+        <div id="features" class="features-section">
+            <h2 style="text-align: center; margin-bottom: 50px;">Tại sao chọn DreamSpace?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="icon-box"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                    <h3>Dễ dàng sử dụng</h3>
+                    <p>Giao diện kéo thả trực quan, phù hợp cho cả người không chuyên.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon-box"><i class="fa-solid fa-cloud"></i></div>
+                    <h3>Lưu trữ đám mây</h3>
+                    <p>Thiết kế của bạn được đồng bộ hóa và truy cập mọi lúc mọi nơi.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon-box"><i class="fa-solid fa-bolt"></i></div>
+                    <h3>Hiệu năng cao</h3>
+                    <p>Công nghệ WebGL giúp hiển thị 3D mượt mà ngay trên trình duyệt.</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="footer">
+            <p>&copy; 2026 DreamSpace Team. All rights reserved.</p>
+        </footer>
     </div>
 
     <div id="login-overlay" class="hidden">
@@ -49,7 +108,6 @@
                     <button class="menu-item" id="btn-load"><i class="fa-solid fa-folder-open"></i> Mở</button>
                 </div>
             </div>
-            
             <div class="header-right">
                 <div class="user-info">
                     <div class="avatar"><i class="fa-solid fa-user"></i></div>
@@ -62,42 +120,30 @@
         <div class="studio-toolbar">
             <div class="toolbar-title">Thư viện</div>
             <button class="tool-btn" onclick="window.addFurniture('box')">
-                <i class="fa-solid fa-couch"></i> <span>Ghế Sofa</span>
+                <i class="fa-solid fa-couch"></i> <span>Ghế</span>
             </button>
             <button class="tool-btn" onclick="window.addFurniture('cylinder')">
-                <i class="fa-solid fa-table"></i> <span>Bàn Trà</span>
+                <i class="fa-solid fa-table"></i> <span>Bàn</span>
             </button>
             <button class="tool-btn" onclick="window.addFurniture('sphere')">
-                <i class="fa-solid fa-lightbulb"></i> <span>Đèn Trần</span>
+                <i class="fa-solid fa-lightbulb"></i> <span>Đèn</span>
             </button>
         </div>
 
         <div class="studio-properties" id="prop-panel">
             <div class="panel-header">Thuộc tính</div>
             <div id="prop-content" style="opacity: 0.5; text-align: center; margin-top: 20px;">
-                <p>Chọn một vật thể<br>để xem chi tiết</p>
+                <p>Chọn vật thể<br>để xem chi tiết</p>
             </div>
             <div id="prop-details" class="hidden">
-                <div class="prop-group">
-                    <label>Loại:</label> <span id="prop-type" style="font-weight: bold; color: #4a90e2">--</span>
-                </div>
-                <div class="prop-group">
-                    <label>Màu sắc:</label> 
-                    <div id="prop-color" style="width: 20px; height: 20px; display: inline-block; border-radius: 4px; border: 1px solid #fff;"></div>
-                </div>
-                <div class="prop-group">
-                    <label>Vị trí X:</label> <span id="prop-x">0.00</span>
-                </div>
-                <div class="prop-group">
-                    <label>Vị trí Z:</label> <span id="prop-z">0.00</span>
-                </div>
-                <button id="btn-delete-obj" class="delete-btn"><i class="fa-solid fa-trash"></i> Xóa vật thể</button>
+                <div class="prop-group"><label>Loại:</label> <span id="prop-type" style="font-weight:bold;color:#4a90e2">--</span></div>
+                <div class="prop-group"><label>Màu:</label> <div id="prop-color" style="width:20px;height:20px;border-radius:4px;border:1px solid #fff"></div></div>
+                <div class="prop-group"><label>X:</label> <span id="prop-x">0.00</span></div>
+                <div class="prop-group"><label>Z:</label> <span id="prop-z">0.00</span></div>
+                <button id="btn-delete-obj" class="delete-btn"><i class="fa-solid fa-trash"></i> Xóa</button>
             </div>
         </div>
-        
-        <div class="controls-hint">
-            <i class="fa-solid fa-mouse"></i> Chuột trái: Chọn | Chuột phải: Xoay | T: Di chuyển | R: Xoay
-        </div>
+        <div class="controls-hint"><i class="fa-solid fa-mouse"></i> Chuột trái: Chọn | Phải: Xoay | T: Di chuyển | R: Xoay</div>
     </div>
 
     <script type="module" src="/src/main.js"></script>
