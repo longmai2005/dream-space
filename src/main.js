@@ -12,7 +12,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 // --- GLOBAL VARIABLES ---
 let currentUser = null;
-const objects = []; // Mảng chứa các vật thể nội thất (QUAN TRỌNG CHO RAYCASTER)
+const objects = []; 
 const history = []; 
 const redoStack = [];
 let roomMeshes = [];
@@ -27,20 +27,19 @@ function getIcon(name) {
     if(n.includes('table') || n.includes('desk')) return 'table';
     if(n.includes('lamp') || n.includes('light')) return 'lightbulb';
     if(n.includes('plant') || n.includes('flower')) return 'seedling';
-    if(n.includes('cabinet') || n.includes('shelf') || n.includes('wardrobe')) return 'box-archive';
-    if(n.includes('computer') || n.includes('monitor') || n.includes('tv')) return 'computer';
+    if(n.includes('cabinet') || n.includes('shelf') || n.includes('wardrobe') || n.includes('drawer')) return 'box-archive';
+    if(n.includes('computer') || n.includes('monitor') || n.includes('tv') || n.includes('laptop')) return 'computer';
     if(n.includes('bath') || n.includes('toilet') || n.includes('sink')) return 'bath';
-    if(n.includes('fridge') || n.includes('kitchen')) return 'utensils';
-    if(n.includes('window') || n.includes('curtain') || n.includes('blind')) return 'border-all';
-    if(n.includes('picture') || n.includes('art') || n.includes('frame')) return 'image';
+    if(n.includes('fridge') || n.includes('kitchen') || n.includes('stove')) return 'utensils';
+    if(n.includes('window') || n.includes('curtain') || n.includes('blind') || n.includes('door')) return 'door-open';
+    if(n.includes('picture') || n.includes('art') || n.includes('frame') || n.includes('clock')) return 'image';
     return 'cube';
 }
 
 function getScale(name) {
     const n = name.toLowerCase();
-    if (n.includes('pen') || n.includes('cup') || n.includes('mouse')) return 2; 
-    if (n.includes('bed') && n.includes('double')) return 0.015;
-    if (n.includes('bed')) return 0.015;
+    if (n.includes('pen') || n.includes('cup') || n.includes('mouse') || n.includes('brush') || n.includes('soda') || n.includes('mug')) return 2.0; 
+    if (n.includes('bed') && (n.includes('double') || n.includes('bunk') || n.includes('single'))) return 0.015;
     return 1.2; 
 }
 
@@ -51,14 +50,14 @@ function isWallItem(name) {
            n.includes('clock') || n.includes('wall shelf') || n.includes('switch') || 
            n.includes('outlet') || n.includes('ac') || n.includes('mounted') ||
            n.includes('wall lamp') || n.includes('sconce') || n.includes('painting') ||
-           n.includes('cabinet upper') || n.includes('doorway');
+           n.includes('cabinet upper') || n.includes('doorway') || n.includes('knife rack') || n.includes('papertowel');
 }
 
-// --- DATABASE: PHÒNG RỘNG HƠN & LIST ĐỒ ---
+// --- DATABASE FULL (COPY TỪ INPUT CỦA BẠN) ---
 const ROOM_DATABASE = {
     livingroom: {
         name: "Phòng Khách",
-        width: 8, depth: 6, floorColor: 0x8d6e63, wallColor: 0xeeeeee,
+        width: 20, depth: 15, floorColor: 0x8d6e63, wallColor: 0xeeeeee,
         folder: '/models/livingroom/',
         items: [
             "Couch Large.glb", "Couch Medium.glb", "Couch Small.glb", "L Couch.glb", "Lounge Sofa.glb", 
@@ -72,11 +71,11 @@ const ROOM_DATABASE = {
             "Lamp Floor.glb", "Lamp Round Floor.glb", "Lamp Round Table.glb", "Lamp Square Ceiling.glb", "Lamp Square Floor.glb", "Lamp Square Table.glb", "Lamp Wall.glb", "Ceiling Fan.glb",
             "Speaker.glb", "Speaker Small.glb", "Radio.glb", "Laptop.glb", "Computer Screen.glb", "Computer Keyboard.glb",
             "Coat Rack.glb", "Coat Rack Standing.glb", "Cardboard Box Open.glb", "Cardboard Box Closed.glb", "Paneling.glb", "Doorway.glb", "Doorway Front.glb", "Doorway Open.glb", "Dryer.glb", "Shower Round.glb"
-        ].map(file => ({ fileName: file, name: file.replace('.glb',''), type: 'model', icon: getIcon(file), scale: getScale(file) }))
+        ].map(file => ({ fileName: file, name: file.replace('.glb',''), type: 'model', icon: getIcon(file), scale: getScale(file), isWallMounted: isWallItem(file) }))
     },
     bedroom: {
         name: "Phòng Ngủ",
-        width: 6, depth: 5, floorColor: 0xe0e0e0, wallColor: 0xffccbc,
+        width: 18, depth: 14, floorColor: 0xe0e0e0, wallColor: 0xffccbc,
         folder: '/models/bedroom/',
         items: [
             "Bed Double.glb", "Bed Single.glb", "Bunk Bed.glb", "Bedroom.glb",
@@ -85,11 +84,11 @@ const ROOM_DATABASE = {
             "L Shaped Desk.glb", "Wooden Chair.glb", "Wooden Arm Chair.glb",
             "Floor Lamp.glb", "Ceiling Lamp.glb", "Lamp Round Floor.glb", "Lamp Round Table.glb", "Lamp Square Ceiling.glb", "Lamp Square Floor.glb", "Lamp Square Table.glb", "Lamp Wall.glb",
             "Rug Round.glb", "Monitor.glb", "Tv.glb", "Guitar.glb", "Football.glb", "Dumbell.glb", "Painting Canvas.glb", "Pencil.glb", "Plate.glb", "Glass Cup.glb", "Plastic Cup.glb"
-        ].map(file => ({ fileName: file, name: file.replace('.glb',''), type: 'model', icon: getIcon(file), scale: getScale(file) }))
+        ].map(file => ({ fileName: file, name: file.replace('.glb',''), type: 'model', icon: getIcon(file), scale: getScale(file), isWallMounted: isWallItem(file) }))
     },
     kitchen: {
         name: "Nhà Bếp",
-        width: 6, depth: 5, floorColor: 0x616161, wallColor: 0xb2dfdb,
+        width: 16, depth: 12, floorColor: 0x616161, wallColor: 0xb2dfdb,
         folder: '/models/kitchen/',
         items: [
             "Fridge.glb", "Kitchen Fridge.glb", "Kitchen Fridge Large.glb", "Kitchen Fridge Small.glb", "Kitchen Fridge Built In.glb",
@@ -98,13 +97,13 @@ const ROOM_DATABASE = {
             "Wall Cabinet Single.glb", "Wall Cabinet Single-TPEJeA6HQM.glb", "Wall Cabinet Straight.glb", "Wall Cabinet Corner.glb",
             "Countertop Straight.glb", "Countertop Straight-ipDw2lbUn2.glb", "Countertop Straight-LXwzLcN9XM.glb", "Countertop Corner.glb", "Countertop Sink.glb", "Countertop Single.glb", "Countertop Counter O.glb",
             "Kitchen Sink.glb", "Kitchen Bar.glb", 
-            "Container Kitchen A.glb", "Container Kitchen B.glb", "Plate.glb", "Pot.glb", "Pan.glb", "Lid.glb", "Cutting Board.glb", "Dishrack.glb", "Dishrack Plates.glb", "Utensils Cup.glb", "Spoon.glb", "Spatula.glb", "Kitchen Knife.glb", "Wall Knife Rack.glb", "Papertowel Holder.glb", "Wall Papertowel.glb", "Oven Glove.glb",
+            "Container Kitchen A.glb", "Container Kitchen B.glb", "Plate.glb", "Pot.glb", "Pan.glb", "Lid.glb", "Cutting Board.glb", "Dishrack.glb", "Dishrack Plates.glb", "Utensils Cup.glb", "Spoon.glb", "Spatula.glb", "Kitchen Knife.glb", "Wall Knife Rack.glb", "Wall Papertowel.glb", "Papertowel Holder.glb", "Oven Glove.glb",
             "Mug Yellow.glb", "Red Mug.glb", "Blue Mug.glb"
-        ].map(file => ({ fileName: file, name: file.replace('.glb',''), type: 'model', icon: getIcon(file), scale: getScale(file) }))
+        ].map(file => ({ fileName: file, name: file.replace('.glb',''), type: 'model', icon: getIcon(file), scale: getScale(file), isWallMounted: isWallItem(file) }))
     },
     bathroom: {
         name: "Phòng Tắm",
-        width: 4, depth: 4, floorColor: 0xffffff, wallColor: 0x81d4fa,
+        width: 10, depth: 10, floorColor: 0xffffff, wallColor: 0x81d4fa,
         folder: '/models/bathroom/',
         items: [
             "Bath.glb", "Bathtub.glb", "Shower Round.glb", "Toilet.glb", "Bathroom Sink.glb", "Bathroom Sink Square.glb", 
@@ -115,11 +114,11 @@ const ROOM_DATABASE = {
             "Toothbrush Blue.glb", "Toothbrush Pink.glb", "Toothbrush Cup.glb", "Toothbrush Cup Decor.glb",
             "Container Bathroom A.glb", "Container Bathroom B.glb", "Container Bathroom C.glb", "Container Bathroom D.glb",
             "Wall Tiled Straight.glb", "Wall Tiled Corner In.glb", "Wall Tiled Corner Ou.glb", "Wall Tiled Doorway.glb", "Wall Tiled Window.glb", "Floor Tiled.glb"
-        ].map(file => ({ fileName: file, name: file.replace('.glb',''), type: 'model', icon: getIcon(file), scale: getScale(file) }))
+        ].map(file => ({ fileName: file, name: file.replace('.glb',''), type: 'model', icon: getIcon(file), scale: getScale(file), isWallMounted: isWallItem(file) }))
     },
     officeroom: {
         name: "Văn Phòng",
-        width: 7, depth: 6, floorColor: 0x455a64, wallColor: 0xcfd8dc,
+        width: 18, depth: 14, floorColor: 0x455a64, wallColor: 0xcfd8dc,
         folder: '/models/officeroom/',
         items: [
             "Desk.glb", "Desk-ISpMh81QGq.glb", "Desk-EtJlOllzbf.glb", "Desk-V86Go2rlnq.glb", "Desk-7ban171PzCS.glb", "Adjustable Desk.glb", "Standing Desk.glb", "L Shaped Desk.glb", "Table.glb", "Table Large Circular.glb", "Table tennis table.glb", "Table Tennis Paddle.glb", "Coffee Table.glb",
@@ -133,10 +132,10 @@ const ROOM_DATABASE = {
             "Potted Plant.glb", "Houseplant.glb", "Plant - White Pot.glb", 
             "Wall Art 02.glb", "Wall Art 03.glb", "Wall Art 05.glb", "Wall Art 06.glb", "Blank Picture Frame.glb", "Analog clock.glb", "Trophy.glb", "Rubik's cube.glb", "Desk Toy.glb", "Darts.glb", "Dartboard.glb", "Skateboard.glb", "MS Gundam RX-78-2 with weapons.glb",
             "Rug.glb", "Rug Round.glb", "Cushions.glb", "Window Blinds.glb", "Curtains Double.glb", "Air Vent.glb", "Electrical outlet.glb", "Light Switch.glb", "Fire Extinguisher.glb", "Fire Exit Sign.glb", "CCTV Camera.glb", "Ladder.glb", "Manhole cover.glb"
-        ].map(file => ({ fileName: file, name: file.replace('.glb',''), type: 'model', icon: getIcon(file), scale: getScale(file) }))
+        ].map(file => ({ fileName: file, name: file.replace('.glb',''), type: 'model', icon: getIcon(file), scale: getScale(file), isWallMounted: isWallItem(file) }))
     },
     empty: {
-        name: "Sân Khấu", width: 10, depth: 10, floorColor: 0x222222, wallColor: null, folder: '',
+        name: "Sân Khấu", width: 30, depth: 30, floorColor: 0x222222, wallColor: null, folder: '',
         items: [{ name: "Khối Vuông", icon: "cube", type: 'box', color: 0xaaaaaa, scale: {x:1, y:1, z:1} }]
     }
 };
@@ -152,7 +151,6 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.outputColorSpace = THREE.SRGBColorSpace; 
-
 // *** QUAN TRỌNG: Tabindex để nhận phím T, R ***
 renderer.domElement.setAttribute('tabindex', '1'); 
 renderer.domElement.style.outline = 'none';
@@ -199,15 +197,13 @@ renderer.domElement.addEventListener('pointerdown', (event) => {
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
     
-    // 3. CHỈ RAYCAST VÀO DANH SÁCH 'objects' (Bỏ qua tường, sàn, gizmo)
-    // 'true' nghĩa là kiểm tra cả các mesh con bên trong model
+    // 3. CHỈ RAYCAST VÀO DANH SÁCH 'objects'
     const intersects = raycaster.intersectObjects(objects, true);
     
     if (intersects.length > 0) {
         let selected = intersects[0].object;
         
         // 4. TÌM VỀ GỐC (ROOT OBJECT)
-        // Vì click trúng 'Mesh' (chân ghế), ta phải tìm 'Group' (cả cái ghế) nằm trong mảng 'objects'
         while (selected.parent && !objects.includes(selected)) {
             selected = selected.parent;
         }
@@ -260,7 +256,6 @@ function deleteObject(obj) {
 }
 
 // --- 4. HISTORY SYSTEM ---
-// Ghi lịch sử khi thả chuột (kết thúc kéo)
 transformControl.addEventListener('dragging-changed', (event) => {
     orbit.enabled = !event.value;
     if (event.value) { // Start Drag
