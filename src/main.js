@@ -538,19 +538,62 @@ const loginOverlay = document.getElementById('login-overlay');
 const mainUi = document.getElementById('main-ui');
 const modalOverlay = document.getElementById('modal-overlay');
 
-function showLogin() {
-    if(homepage) homepage.classList.add('hidden');
-    if(mainUi) mainUi.classList.add('hidden');
-    if(loginOverlay) { loginOverlay.classList.remove('hidden'); loginOverlay.style.display = 'flex'; }
+onAuthStateChanged(auth, (user) => { 
+    currentUser = user; 
+    if (!user) showHomepage();
+    // Nếu có user, code ở nút bấm sẽ gọi showMainApp
+});
+
+function showHomepage() {
+    document.getElementById('homepage').classList.remove('hidden');
+    document.getElementById('login-overlay').classList.add('hidden');
+    document.getElementById('main-ui').classList.add('hidden');
+    document.getElementById('intro-splash').classList.add('hidden'); // Đảm bảo ẩn intro
 }
+
 function showMainApp(user) {
-    currentUser = user;
-    if(homepage) homepage.classList.add('hidden');
-    if(loginOverlay) loginOverlay.classList.add('hidden');
-    if(mainUi) mainUi.classList.remove('hidden');
+    // 1. Ẩn các màn hình cũ
+    document.getElementById('homepage').classList.add('hidden');
+    document.getElementById('login-overlay').classList.add('hidden');
+    
+    // 2. Cập nhật tên user
     let name = user.email.split('@')[0];
     if(user.displayName) name = user.displayName;
-    const uDisplay = document.getElementById('user-display'); if(uDisplay) uDisplay.innerText = name;
+    document.getElementById('user-display').innerText = name;
+    document.getElementById('intro-name').innerText = name; // Tên ở màn hình Intro
+
+    // 3. HIỆN INTRO SPLASH TRƯỚC
+    const intro = document.getElementById('intro-splash');
+    intro.classList.remove('hidden');
+    intro.style.display = 'flex'; // Ép hiện
+
+    // 4. Kích hoạt Main UI (ở chế độ ẩn dưới Intro)
+    const mainUI = document.getElementById('main-ui');
+    mainUI.classList.remove('hidden');
+    
+    // Đảm bảo Dashboard cũng được bật sẵn trong Main UI
+    const welcome = document.getElementById('studio-welcome');
+    if(welcome) {
+        welcome.classList.remove('hidden');
+        welcome.style.display = 'flex';
+        welcome.style.opacity = '1';
+    }
+
+    // Load nhẹ phòng khách để nền không đen
+    const selector = document.getElementById('room-selector');
+    if(selector && selector.value === "") {
+        selector.value = 'livingroom';
+        selector.dispatchEvent(new Event('change'));
+    }
+
+    // 5. SAU 2 GIÂY -> ẨN INTRO -> HIỆN DASHBOARD
+    setTimeout(() => {
+        intro.style.opacity = '0'; // Hiệu ứng mờ dần
+        setTimeout(() => {
+            intro.classList.add('hidden'); // Ẩn hẳn
+            intro.style.display = 'none';
+        }, 800); // Đợi CSS transition xong
+    }, 2000); // Thời gian chạy intro (2s)
 }
 
 onAuthStateChanged(auth, async (user) => { if (user) currentUser = user; });
