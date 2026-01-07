@@ -10,74 +10,62 @@ import {
 } from './firebase-config.js';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-// --- 0. BIẾN TOÀN CỤC ---
 let currentUser = null;
-const objects = []; 
+const objects = []; // Danh sách vật thể nội thất
 const history = []; 
 const redoStack = [];
 let roomMeshes = [];
 let currentRoomConfig = null;
 
+// Biến cho Dragging Logic mới
 let isDragging = false;
 let draggedObject = null;
-const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0); // Mặt phẳng sàn ảo
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 const intersectPoint = new THREE.Vector3();
 const offset = new THREE.Vector3();
 
-// *** HÀM CHỌN PHÒNG TOÀN CỤC ***
-window.selectRoomFromDashboard = (roomKey) => {
-    const selector = document.getElementById('room-selector');
-    const welcomeScreen = document.getElementById('studio-welcome');
-    if(selector) {
-        selector.value = roomKey;
-        selector.dispatchEvent(new Event('change'));
-    }
-    if(welcomeScreen) {
-        welcomeScreen.classList.add('hidden');
-    }
-};
-
-// --- HELPER FUNCTIONS (AN TOÀN TUYỆT ĐỐI) ---
+// --- HELPER: Auto Icon ---
 function getIcon(name) {
-    if (!name || typeof name !== 'string') return 'cube';
     const n = name.toLowerCase();
-    if(n.includes('chair') || n.includes('sofa') || n.includes('couch')) return 'couch';
+    if(n.includes('chair') || n.includes('sofa') || n.includes('bench') || n.includes('couch')) return 'couch';
     if(n.includes('bed')) return 'bed';
     if(n.includes('table') || n.includes('desk')) return 'table';
-    if(n.includes('lamp')) return 'lightbulb';
-    if(n.includes('plant')) return 'seedling';
-    if(n.includes('cabinet') || n.includes('shelf')) return 'box-archive';
-    if(n.includes('computer') || n.includes('tv')) return 'computer';
-    if(n.includes('bath') || n.includes('toilet')) return 'bath';
-    if(n.includes('fridge') || n.includes('kitchen')) return 'utensils';
-    if(n.includes('window') || n.includes('curtain')) return 'border-all';
+    if(n.includes('lamp') || n.includes('light')) return 'lightbulb';
+    if(n.includes('plant') || n.includes('flower')) return 'seedling';
+    if(n.includes('cabinet') || n.includes('shelf') || n.includes('wardrobe') || n.includes('drawer')) return 'box-archive';
+    if(n.includes('computer') || n.includes('monitor') || n.includes('tv') || n.includes('laptop')) return 'computer';
+    if(n.includes('bath') || n.includes('toilet') || n.includes('sink')) return 'bath';
+    if(n.includes('fridge') || n.includes('kitchen') || n.includes('stove')) return 'utensils';
+    if(n.includes('window') || n.includes('curtain') || n.includes('blind') || n.includes('door')) return 'door-open';
+    if(n.includes('picture') || n.includes('art') || n.includes('frame') || n.includes('clock')) return 'image';
     return 'cube';
 }
 
+function getScale(name) {
+    const n = name.toLowerCase();
+    if (n.includes('pen') || n.includes('cup') || n.includes('mouse') || n.includes('brush') || n.includes('soda') || n.includes('mug')) return 2.0; 
+    if (n.includes('bed') && (n.includes('double') || n.includes('bunk') || n.includes('single'))) return 0.015;
+    return 1.2; 
+}
+
 function isWallItem(name) {
-    if (!name || typeof name !== 'string') return false;
     const n = name.toLowerCase();
     return n.includes('window') || n.includes('curtain') || n.includes('blind') || 
            n.includes('art') || n.includes('picture') || n.includes('frame') || 
            n.includes('clock') || n.includes('wall shelf') || n.includes('switch') || 
+           n.includes('outlet') || n.includes('ac') || n.includes('mounted') ||
            n.includes('wall lamp') || n.includes('sconce') || n.includes('painting') ||
-           n.includes('cabinet upper');
+           n.includes('cabinet upper') || n.includes('doorway') || n.includes('knife rack') || n.includes('papertowel');
 }
 
-function getScale(name) {
-    if (!name || typeof name !== 'string') return 1.2;
-    const n = name.toLowerCase();
-    if (n.includes('pen') || n.includes('cup') || n.includes('mouse')) return 2.0; 
-    if (n.includes('bed')) return 0.015;
-    return 1.2; 
-}
-
-// --- DATABASE FULL ---
+// --- DATABASE FULL (COPY TỪ INPUT CỦA BẠN) ---
 const ROOM_DATABASE = {
     livingroom: {
-        name: "Phòng Khách", width: 20, depth: 15, floorColor: 0x8d6e63, wallColor: 0xeeeeee, folder: '/models/livingroom/',
+        name: "Phòng Khách",
+        width: 20, depth: 15, floorColor: 0x8d6e63, wallColor: 0xeeeeee,
+        folder: '/models/livingroom/',
         items: [
             "Couch Large.glb", "Couch Medium.glb", "Couch Small.glb", "L Couch.glb", "Lounge Sofa.glb", 
             "Lounge Sofa Corner.glb", "Lounge Sofa Long.glb", "Lounge Sofa Ottoman.glb", "Lounge Design Sofa.glb", "Lounge Design Sofa Corn.glb",
@@ -90,10 +78,12 @@ const ROOM_DATABASE = {
             "Lamp Floor.glb", "Lamp Round Floor.glb", "Lamp Round Table.glb", "Lamp Square Ceiling.glb", "Lamp Square Floor.glb", "Lamp Square Table.glb", "Lamp Wall.glb", "Ceiling Fan.glb",
             "Speaker.glb", "Speaker Small.glb", "Radio.glb", "Laptop.glb", "Computer Screen.glb", "Computer Keyboard.glb",
             "Coat Rack.glb", "Coat Rack Standing.glb", "Cardboard Box Open.glb", "Cardboard Box Closed.glb", "Paneling.glb", "Doorway.glb", "Doorway Front.glb", "Doorway Open.glb", "Dryer.glb", "Shower Round.glb"
-        ].map(f => ({ fileName: f, name: f.replace('.glb',''), type: 'model', icon: getIcon(f), scale: getScale(f), isWallMounted: isWallItem(f) }))
+        ].map(file => ({ fileName: file, name: file.replace('.glb',''), type: 'model', icon: getIcon(file), scale: getScale(file), isWallMounted: isWallItem(file) }))
     },
     bedroom: {
-        name: "Phòng Ngủ", width: 18, depth: 14, floorColor: 0xe0e0e0, wallColor: 0xffccbc, folder: '/models/bedroom/',
+        name: "Phòng Ngủ",
+        width: 18, depth: 14, floorColor: 0xe0e0e0, wallColor: 0xffccbc,
+        folder: '/models/bedroom/',
         items: [
             "Bed Double.glb", "Bed Single.glb", "Bunk Bed.glb", "Bedroom.glb",
             "Large Wardrobe.glb", "Small Wardrobe.glb", "Dresser.glb", "Lingerie Dresser.glb", "Night Stand.glb",
@@ -101,10 +91,12 @@ const ROOM_DATABASE = {
             "L Shaped Desk.glb", "Wooden Chair.glb", "Wooden Arm Chair.glb",
             "Floor Lamp.glb", "Ceiling Lamp.glb", "Lamp Round Floor.glb", "Lamp Round Table.glb", "Lamp Square Ceiling.glb", "Lamp Square Floor.glb", "Lamp Square Table.glb", "Lamp Wall.glb",
             "Rug Round.glb", "Monitor.glb", "Tv.glb", "Guitar.glb", "Football.glb", "Dumbell.glb", "Painting Canvas.glb", "Pencil.glb", "Plate.glb", "Glass Cup.glb", "Plastic Cup.glb"
-        ].map(f => ({ fileName: f, name: f.replace('.glb',''), type: 'model', icon: getIcon(f), scale: getScale(f), isWallMounted: isWallItem(f) }))
+        ].map(file => ({ fileName: file, name: file.replace('.glb',''), type: 'model', icon: getIcon(file), scale: getScale(file), isWallMounted: isWallItem(file) }))
     },
     kitchen: {
-        name: "Nhà Bếp", width: 16, depth: 12, floorColor: 0x616161, wallColor: 0xb2dfdb, folder: '/models/kitchen/',
+        name: "Nhà Bếp",
+        width: 16, depth: 12, floorColor: 0x616161, wallColor: 0xb2dfdb,
+        folder: '/models/kitchen/',
         items: [
             "Fridge.glb", "Kitchen Fridge.glb", "Kitchen Fridge Large.glb", "Kitchen Fridge Small.glb", "Kitchen Fridge Built In.glb",
             "Stove.glb", "Kitchen Stove.glb", "Kitchen Stove Electric.glb", "Kitchen Stove Hood.glb", "Extractor Hood.glb", "Kitchen Hood Large.glb", "Kitchen Microwave.glb", "Toaster.glb", "Kettle.glb", "Kitchen Blender.glb", "Kitchen Coffee Machine.glb",
@@ -114,10 +106,12 @@ const ROOM_DATABASE = {
             "Kitchen Sink.glb", "Kitchen Bar.glb", 
             "Container Kitchen A.glb", "Container Kitchen B.glb", "Plate.glb", "Pot.glb", "Pan.glb", "Lid.glb", "Cutting Board.glb", "Dishrack.glb", "Dishrack Plates.glb", "Utensils Cup.glb", "Spoon.glb", "Spatula.glb", "Kitchen Knife.glb", "Wall Knife Rack.glb", "Wall Papertowel.glb", "Papertowel Holder.glb", "Oven Glove.glb",
             "Mug Yellow.glb", "Red Mug.glb", "Blue Mug.glb"
-        ].map(f => ({ fileName: f, name: f.replace('.glb',''), type: 'model', icon: getIcon(f), scale: getScale(f), isWallMounted: isWallItem(f) }))
+        ].map(file => ({ fileName: file, name: file.replace('.glb',''), type: 'model', icon: getIcon(file), scale: getScale(file), isWallMounted: isWallItem(file) }))
     },
     bathroom: {
-        name: "Phòng Tắm", width: 10, depth: 10, floorColor: 0xffffff, wallColor: 0x81d4fa, folder: '/models/bathroom/',
+        name: "Phòng Tắm",
+        width: 10, depth: 10, floorColor: 0xffffff, wallColor: 0x81d4fa,
+        folder: '/models/bathroom/',
         items: [
             "Bath.glb", "Bathtub.glb", "Shower Round.glb", "Toilet.glb", "Bathroom Sink.glb", "Bathroom Sink Square.glb", 
             "Bathroom Cabinet.glb", "Bathroom Cabinet Drawe.glb", "Cabinet Bathroom.glb", "Wall Shelf.glb", 
@@ -127,10 +121,12 @@ const ROOM_DATABASE = {
             "Toothbrush Blue.glb", "Toothbrush Pink.glb", "Toothbrush Cup.glb", "Toothbrush Cup Decor.glb",
             "Container Bathroom A.glb", "Container Bathroom B.glb", "Container Bathroom C.glb", "Container Bathroom D.glb",
             "Wall Tiled Straight.glb", "Wall Tiled Corner In.glb", "Wall Tiled Corner Ou.glb", "Wall Tiled Doorway.glb", "Wall Tiled Window.glb", "Floor Tiled.glb"
-        ].map(f => ({ fileName: f, name: f.replace('.glb',''), type: 'model', icon: getIcon(f), scale: getScale(f), isWallMounted: isWallItem(f) }))
+        ].map(file => ({ fileName: file, name: file.replace('.glb',''), type: 'model', icon: getIcon(file), scale: getScale(file), isWallMounted: isWallItem(file) }))
     },
     officeroom: {
-        name: "Văn Phòng", width: 18, depth: 14, floorColor: 0x455a64, wallColor: 0xcfd8dc, folder: '/models/officeroom/',
+        name: "Văn Phòng",
+        width: 18, depth: 14, floorColor: 0x455a64, wallColor: 0xcfd8dc,
+        folder: '/models/officeroom/',
         items: [
             "Desk.glb", "Desk-ISpMh81QGq.glb", "Desk-EtJlOllzbf.glb", "Desk-V86Go2rlnq.glb", "Desk-7ban171PzCS.glb", "Adjustable Desk.glb", "Standing Desk.glb", "L Shaped Desk.glb", "Table.glb", "Table Large Circular.glb", "Table tennis table.glb", "Table Tennis Paddle.glb", "Coffee Table.glb",
             "Office Chair.glb", "Chair.glb", "Chair-1MFMOaz3zqe.glb", "Couch Medium.glb", "Couch Small.glb", "Couch _ Wide.glb",
@@ -143,7 +139,7 @@ const ROOM_DATABASE = {
             "Potted Plant.glb", "Houseplant.glb", "Plant - White Pot.glb", 
             "Wall Art 02.glb", "Wall Art 03.glb", "Wall Art 05.glb", "Wall Art 06.glb", "Blank Picture Frame.glb", "Analog clock.glb", "Trophy.glb", "Rubik's cube.glb", "Desk Toy.glb", "Darts.glb", "Dartboard.glb", "Skateboard.glb", "MS Gundam RX-78-2 with weapons.glb",
             "Rug.glb", "Rug Round.glb", "Cushions.glb", "Window Blinds.glb", "Curtains Double.glb", "Air Vent.glb", "Electrical outlet.glb", "Light Switch.glb", "Fire Extinguisher.glb", "Fire Exit Sign.glb", "CCTV Camera.glb", "Ladder.glb", "Manhole cover.glb"
-        ].map(f => ({ fileName: f, name: f.replace('.glb',''), type: 'model', icon: getIcon(f), scale: getScale(f), isWallMounted: isWallItem(f) }))
+        ].map(file => ({ fileName: file, name: file.replace('.glb',''), type: 'model', icon: getIcon(file), scale: getScale(file), isWallMounted: isWallItem(file) }))
     },
     empty: {
         name: "Sân Khấu", width: 30, depth: 30, floorColor: 0x222222, wallColor: null, folder: '',
@@ -151,187 +147,496 @@ const ROOM_DATABASE = {
     }
 };
 
-// --- 1. SETUP THREE.JS ---
-const scene = new THREE.Scene(); 
+// --- 1. SETUP SCENE ---
+const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x1a1a1a);
-const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000); 
-camera.position.set(0, 20, 30); 
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); 
-renderer.setSize(window.innerWidth, window.innerHeight); 
-renderer.shadowMap.enabled = true;
-renderer.domElement.setAttribute('tabindex', '1'); 
-const container = document.getElementById('canvas-container'); 
-if(container) container.appendChild(renderer.domElement);
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 1.5); 
-dirLight.position.set(20, 40, 20); 
-dirLight.castShadow = true; 
-scene.add(dirLight); 
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(0, 20, 30); 
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.outputColorSpace = THREE.SRGBColorSpace; 
+// Tabindex để nhận phím
+renderer.domElement.setAttribute('tabindex', '1'); 
+renderer.domElement.style.outline = 'none';
+
+const container = document.getElementById('canvas-container');
+if(container) { container.innerHTML = ''; container.appendChild(renderer.domElement); }
+
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+dirLight.position.set(20, 40, 20);
+dirLight.castShadow = true;
+dirLight.shadow.mapSize.set(4096, 4096);
+dirLight.shadow.camera.left = -50; dirLight.shadow.camera.right = 50;
+dirLight.shadow.camera.top = 50; dirLight.shadow.camera.bottom = -50;
+scene.add(dirLight);
 scene.add(new THREE.AmbientLight(0xffffff, 0.8));
 
 const orbit = new OrbitControls(camera, renderer.domElement);
-const transformControl = new TransformControls(camera, renderer.domElement); 
-transformControl.setMode('rotate'); 
+const transformControl = new TransformControls(camera, renderer.domElement);
+// Ẩn Gizmo mặc định, chỉ hiện khi bấm T/R
+transformControl.visible = false; 
+transformControl.enabled = false;
 scene.add(transformControl);
-
-transformControl.addEventListener('dragging-changed', (e) => orbit.enabled = !e.value);
-transformControl.addEventListener('change', () => { if(transformControl.object) limitObjectBounds(transformControl.object); });
 
 const loader = new GLTFLoader();
 
-// --- 2. LOGIC PHÒNG ---
+// --- 2. LOGIC TẠO PHÒNG & TƯỜNG ---
 function buildRoomShell(config) {
     currentRoomConfig = config;
-    roomMeshes.forEach(mesh => scene.remove(mesh)); 
+    roomMeshes.forEach(mesh => scene.remove(mesh));
     roomMeshes = [];
+
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(config.width, config.depth), new THREE.MeshStandardMaterial({ color: config.floorColor }));
-    floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; 
-    scene.add(floor); 
-    roomMeshes.push(floor);
+    floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true;
+    scene.add(floor); roomMeshes.push(floor);
+
     if (config.wallColor) {
         const h = 6; 
         const wallMat = new THREE.MeshStandardMaterial({ color: config.wallColor, side: THREE.DoubleSide });
+        
         const createWall = (w, h, x, y, z, ry) => {
             const wall = new THREE.Mesh(new THREE.PlaneGeometry(w, h), wallMat);
-            wall.position.set(x, y, z); if(ry) wall.rotation.y = ry;
-            wall.receiveShadow = true; scene.add(wall); roomMeshes.push(wall);
+            wall.position.set(x, y, z);
+            if(ry) wall.rotation.y = ry;
+            wall.receiveShadow = true;
+            scene.add(wall);
+            roomMeshes.push(wall);
         };
-        createWall(config.width, h, 0, h/2, -config.depth/2, 0);
-        createWall(config.depth, h, -config.width/2, h/2, 0, Math.PI/2);
-        createWall(config.depth, h, config.width/2, h/2, 0, -Math.PI/2);
+
+        createWall(config.width, h, 0, h/2, -config.depth/2, 0); // Back
+        createWall(config.depth, h, -config.width/2, h/2, 0, Math.PI/2); // Left
+        createWall(config.depth, h, config.width/2, h/2, 0, -Math.PI/2); // Right
     }
 }
 
-function limitObjectBounds(obj) {
-    if (!currentRoomConfig) return;
-    const box = new THREE.Box3().setFromObject(obj);
-    if (!obj.userData.isWallMounted && box.min.y < 0) obj.position.y += (0 - box.min.y);
-}
-
+// --- 3. LOGIC TẠO ĐỒ VẬT (FIX LỖI MẶT SÀN) ---
 function createObjectFromConfig(item, folderPath) {
     if (item.type === 'model' && item.fileName) {
-        loader.load(folderPath + item.fileName, (gltf) => {
+        const fullPath = folderPath + item.fileName;
+        loader.load(fullPath, (gltf) => {
             const model = gltf.scene;
-            const s = item.scale || 1.2;
+            
+            // 1. Tự động tính toán Scale
+            let s = 1.2; // Mặc định
+            const n = item.fileName.toLowerCase();
+            if (n.includes('bed')) s = 0.015; // Giường thường scale rất nhỏ
+            if (n.includes('cup') || n.includes('mouse') || n.includes('pen')) s = 2.0; 
+            
             model.scale.set(s, s, s);
-            model.position.set(0, item.isWallMounted ? 2 : 0, 0);
-            model.traverse(c => { if(c.isMesh) { c.castShadow = true; c.receiveShadow = true; }});
-            model.userData = { type: 'model', name: item.name, path: folderPath + item.fileName, isWallMounted: item.isWallMounted };
-            scene.add(model); objects.push(model); limitObjectBounds(model); selectObject(model);
-        });
+
+            // 2. Tự động tính toán mặt sàn (FIX LỖI CHÌM/NỔI)
+            // Lấy hộp bao quanh (Bounding Box) của model
+            const box = new THREE.Box3().setFromObject(model);
+            const height = box.max.y - box.min.y;
+            // Tính khoảng cách từ điểm thấp nhất (min.y) đến gốc (0)
+            const yOffset = -box.min.y; 
+            
+            // Áp dụng vị trí
+            if (item.isWallMounted && currentRoomConfig) {
+                // Gắn tường: Cao 2m
+                model.position.set(0, 2.0, -currentRoomConfig.depth/2 + 0.2); 
+            } else {
+                // Đặt sàn: Dịch chuyển Y lên đúng bằng khoảng hụt
+                model.position.set(0, yOffset, 0); 
+            }
+
+            // Bóng đổ
+            model.traverse((child) => { if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; } });
+
+            // Tagging
+            model.userData = { 
+                type: 'model', name: item.name, path: fullPath, baseScale: s, 
+                isWallMounted: item.isWallMounted, isModelRoot: true, yOffset: yOffset 
+            };
+            
+            scene.add(model); objects.push(model);
+            selectObject(model); // Tự động chọn sau khi tạo
+            addToHistory({ type: 'ADD', object: model }); 
+
+        }, undefined, (err) => { console.warn(`Lỗi tải: ${fullPath}`); });
+    } else {
+        // Fallback Box
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: 0x999999 }));
+        mesh.position.set(0, 0.5, 0);
+        mesh.userData = { type: 'basic', name: item.name, isModelRoot: true, yOffset: 0.5 };
+        scene.add(mesh); objects.push(mesh);
+        selectObject(mesh);
+        addToHistory({ type: 'ADD', object: mesh });
     }
 }
 
-function selectObject(obj) {
-    if(obj) { transformControl.attach(obj); updatePropertiesPanel(obj); } 
-    else { transformControl.detach(); updatePropertiesPanel(null); }
+// --- 4. HỆ THỐNG TƯƠNG TÁC: DRAG & GIZMO ---
+
+function selectObject(object) {
+    if(object) {
+        transformControl.attach(object);
+        updatePropertiesPanel(object);
+    } else {
+        transformControl.detach();
+        updatePropertiesPanel(null);
+    }
 }
 
-// --- 3. SỰ KIỆN CHUỘT & PHÍM ---
-renderer.domElement.addEventListener('pointerdown', (e) => {
-    if (e.target.closest('.floating-toolbar') || !e.target.closest('canvas')) return;
-    mouse.x = (e.clientX / window.innerWidth) * 2 - 1; 
-    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+// --- SỰ KIỆN CHUỘT (DRAG LOGIC MỚI) ---
+renderer.domElement.addEventListener('pointerdown', (event) => {
+    // Bỏ qua nếu bấm vào Gizmo (trục tọa độ)
+    if (event.target.closest('.floating-toolbar') || !event.target.closest('canvas')) return;
+    
+    renderer.domElement.focus();
+    if (event.button !== 0) return;
+
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
+
     const intersects = raycaster.intersectObjects(objects, true);
+    
     if (intersects.length > 0) {
         let target = intersects[0].object;
+        // Tìm object gốc
         while (target.parent && !objects.includes(target)) target = target.parent;
+        
         if (objects.includes(target)) {
-            if (transformControl.visible && transformControl.enabled) { selectObject(target); return; }
-            isDragging = true; draggedObject = target; orbit.enabled = false;
-            if (raycaster.ray.intersectPlane(dragPlane, intersectPoint)) offset.copy(intersectPoint).sub(draggedObject.position);
-            selectObject(draggedObject); return;
+            // BẮT ĐẦU KÉO
+            isDragging = true;
+            draggedObject = target;
+            orbit.enabled = false; // Tắt xoay cam
+            
+            // Tính toán điểm chạm trên mặt phẳng sàn ảo
+            if (raycaster.ray.intersectPlane(dragPlane, intersectPoint)) {
+                offset.copy(intersectPoint).sub(draggedObject.position);
+            }
+            
+            selectObject(draggedObject);
+            // Ẩn Gizmo khi đang kéo tay để đỡ vướng, trừ khi đang ở chế độ xoay
+            if(transformControl.getMode() === 'translate') transformControl.visible = false;
+            
+            return;
         }
     }
-    selectObject(null); transformControl.visible = false;
+    
+    // Nếu bấm ra ngoài -> Bỏ chọn
+    selectObject(null);
+    transformControl.visible = false;
+    transformControl.enabled = false;
 });
 
-renderer.domElement.addEventListener('pointermove', (e) => {
+renderer.domElement.addEventListener('pointermove', (event) => {
     if (!isDragging || !draggedObject) return;
-    mouse.x = (e.clientX / window.innerWidth) * 2 - 1; 
-    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
+
     if (raycaster.ray.intersectPlane(dragPlane, intersectPoint)) {
+        // Di chuyển object theo chuột (chỉ X và Z, giữ nguyên Y)
         draggedObject.position.x = intersectPoint.x - offset.x;
         draggedObject.position.z = intersectPoint.z - offset.z;
-        limitObjectBounds(draggedObject);
     }
 });
 
-renderer.domElement.addEventListener('pointerup', () => { isDragging = false; draggedObject = null; orbit.enabled = true; });
-
-window.addEventListener('keydown', (e) => {
-    const key = e.key.toLowerCase();
-    if (key === 'delete' || key === 'backspace') { if(transformControl.object) { scene.remove(transformControl.object); objects.splice(objects.indexOf(transformControl.object), 1); selectObject(null); } }
-    if (key === 'r') { transformControl.visible = !transformControl.visible; transformControl.enabled = transformControl.visible; }
+renderer.domElement.addEventListener('pointerup', () => {
+    if (isDragging && draggedObject) {
+        addToHistory({ // Lưu lịch sử sau khi kéo xong
+            type: 'TRANSFORM', object: draggedObject,
+            oldPos: draggedObject.position.clone(), oldRot: draggedObject.rotation.clone(), oldScale: draggedObject.scale.clone(),
+            newPos: draggedObject.position.clone(), newRot: draggedObject.rotation.clone(), newScale: draggedObject.scale.clone()
+        });
+    }
+    isDragging = false;
+    draggedObject = null;
+    orbit.enabled = true; // Bật lại xoay cam
+    
+    // Nếu đang chọn vật, hiện lại Gizmo (nếu đã bật T/R)
+    if (transformControl.object && transformControl.enabled) {
+        transformControl.visible = true;
+    }
 });
 
-// --- 4. UI & AUTH ---
+// --- PHÍM TẮT ---
+window.addEventListener('keydown', (e) => {
+    if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+    const key = e.key.toLowerCase();
+
+    if (transformControl.object) {
+        if (key === 'delete' || key === 'backspace') deleteObject(transformControl.object);
+        
+        if (key === 't') {
+            transformControl.setMode('translate');
+            transformControl.enabled = true;
+            transformControl.visible = true;
+        }
+        if (key === 'r') {
+            transformControl.setMode('rotate');
+            transformControl.enabled = true;
+            transformControl.visible = true;
+        }
+    }
+    
+    if ((e.ctrlKey || e.metaKey) && key === 'z') { e.preventDefault(); executeUndo(); }
+    if ((e.ctrlKey || e.metaKey) && key === 'y') { e.preventDefault(); executeRedo(); }
+});
+
+function deleteObject(obj) {
+    if (!obj) return;
+    addToHistory({ type: 'REMOVE', object: obj });
+    scene.remove(obj);
+    objects.splice(objects.indexOf(obj), 1);
+    selectObject(null);
+}
+
+// --- 4. HISTORY SYSTEM ---
+transformControl.addEventListener('dragging-changed', (event) => {
+    orbit.enabled = !event.value;
+    if (event.value) { // Start Drag
+        if(transformControl.object) {
+            dragStartTransform = {
+                pos: transformControl.object.position.clone(),
+                rot: transformControl.object.rotation.clone(),
+                scale: transformControl.object.scale.clone()
+            };
+        }
+    } else { // End Drag
+        if(transformControl.object && dragStartTransform) {
+            addToHistory({
+                type: 'TRANSFORM',
+                object: transformControl.object,
+                oldPos: dragStartTransform.pos, oldRot: dragStartTransform.rot, oldScale: dragStartTransform.scale,
+                newPos: transformControl.object.position.clone(), newRot: transformControl.object.rotation.clone(), newScale: transformControl.object.scale.clone()
+            });
+        }
+    }
+});
+
+function addToHistory(action) {
+    history.push(action);
+    redoStack.length = 0; 
+}
+
+function executeUndo() {
+    if (history.length === 0) return;
+    const action = history.pop();
+    redoStack.push(action);
+
+    if (action.type === 'ADD') {
+        scene.remove(action.object);
+        const idx = objects.indexOf(action.object);
+        if (idx > -1) objects.splice(idx, 1);
+        transformControl.detach();
+        updatePropertiesPanel(null);
+    } else if (action.type === 'REMOVE') {
+        scene.add(action.object);
+        objects.push(action.object);
+        transformControl.attach(action.object);
+        updatePropertiesPanel(action.object);
+    } else if (action.type === 'TRANSFORM') {
+        action.object.position.copy(action.oldPos);
+        action.object.rotation.copy(action.oldRot);
+        action.object.scale.copy(action.oldScale);
+        transformControl.attach(action.object);
+    }
+}
+
+function executeRedo() {
+    if (redoStack.length === 0) return;
+    const action = redoStack.pop();
+    history.push(action);
+
+    if (action.type === 'ADD') {
+        scene.add(action.object);
+        objects.push(action.object);
+        transformControl.attach(action.object);
+    } else if (action.type === 'REMOVE') {
+        scene.remove(action.object);
+        const idx = objects.indexOf(action.object);
+        if (idx > -1) objects.splice(idx, 1);
+        transformControl.detach();
+        updatePropertiesPanel(null);
+    } else if (action.type === 'TRANSFORM') {
+        action.object.position.copy(action.newPos);
+        action.object.rotation.copy(action.newRot);
+        action.object.scale.copy(action.newScale);
+        transformControl.attach(action.object);
+    }
+}
+
 function updateToolbar(roomKey, items) {
     const toolbar = document.getElementById('dynamic-toolbar');
     if(!toolbar) return;
     toolbar.innerHTML = `<div class="ft-label">Nội Thất</div>`;
-    const folder = ROOM_DATABASE[roomKey].folder;
+    toolbar.style.overflowY = 'auto'; toolbar.style.maxHeight = '70vh';
+    const currentRoomConfig = ROOM_DATABASE[roomKey];
     items.forEach(item => {
         const btn = document.createElement('button');
         btn.className = 'tool-item';
+        btn.title = item.name;
         btn.innerHTML = `<i class="fa-solid fa-${item.icon}"></i>`;
-        btn.onclick = () => createObjectFromConfig(item, folder);
+        btn.onclick = (e) => { e.stopPropagation(); createObjectFromConfig(item, currentRoomConfig.folder); };
         toolbar.appendChild(btn);
     });
 }
 
-function updatePropertiesPanel(obj) {
-    const details = document.getElementById('prop-details');
-    const empty = document.getElementById('prop-content');
-    if (obj) {
-        empty.classList.add('hidden'); details.classList.remove('hidden');
-        document.getElementById('prop-type').innerText = obj.userData.name;
-        document.getElementById('prop-x').innerText = obj.position.x.toFixed(2);
-        document.getElementById('prop-z').innerText = obj.position.z.toFixed(2);
+function updatePropertiesPanel(object) {
+    const propDetails = document.getElementById('prop-details');
+    const propContent = document.getElementById('prop-content');
+    if (object) {
+        if(propContent) propContent.classList.add('hidden');
+        if(propDetails) propDetails.classList.remove('hidden');
+        document.getElementById('prop-type').innerText = object.userData.name || "Model";
+        document.getElementById('prop-x').innerText = object.position.x.toFixed(2);
+        document.getElementById('prop-z').innerText = object.position.z.toFixed(2);
+        const colorEl = document.getElementById('prop-color');
+        if(colorEl) colorEl.style.backgroundColor = '#4a90e2';
     } else {
-        empty.classList.remove('hidden'); details.classList.add('hidden');
+        if(propContent) propContent.classList.remove('hidden');
+        if(propDetails) propDetails.classList.add('hidden');
     }
 }
 
+transformControl.addEventListener('change', () => { if(transformControl.object) updatePropertiesPanel(transformControl.object); });
+const btnUndo = document.getElementById('btn-undo');
+if(btnUndo) btnUndo.addEventListener('click', executeUndo);
+const btnRedo = document.getElementById('btn-redo');
+if(btnRedo) btnRedo.addEventListener('click', executeRedo);
+const btnDeleteObj = document.getElementById('btn-delete-obj');
+if(btnDeleteObj) btnDeleteObj.addEventListener('click', () => deleteObject(transformControl.object));
+
+// --- INIT ---
 const roomSelector = document.getElementById('room-selector');
-if(roomSelector) roomSelector.addEventListener('change', (e) => {
-    const config = ROOM_DATABASE[e.target.value];
-    if(config) { buildRoomShell(config); updateToolbar(e.target.value, config.items); objects.forEach(o => scene.remove(o)); objects.length = 0; selectObject(null); }
-});
-
-const auth = getAuth();
-onAuthStateChanged(auth, (user) => { 
-    currentUser = user; 
-    checkAuth(); // *** FIX QUAN TRỌNG: Gọi checkAuth để chuyển màn hình ngay khi login ***
-});
-
-function checkAuth() {
-    const hp = document.getElementById('homepage');
-    const lo = document.getElementById('login-overlay');
-    const mui = document.getElementById('main-ui');
-    const welcome = document.getElementById('studio-welcome');
-
-    if(currentUser) {
-        hp.classList.add('hidden'); lo.classList.add('hidden'); mui.classList.remove('hidden');
-        document.getElementById('user-display').innerText = currentUser.displayName || currentUser.email.split('@')[0];
-        if(welcome) { welcome.classList.remove('hidden'); welcome.style.opacity = '1'; }
-    } else {
-        hp.classList.remove('hidden'); mui.classList.add('hidden');
-    }
+if (roomSelector) {
+    roomSelector.addEventListener('change', (e) => {
+        const roomKey = e.target.value;
+        const roomConfig = ROOM_DATABASE[roomKey];
+        if (roomConfig) {
+            buildRoomShell(roomConfig);
+            updateToolbar(roomKey, roomConfig.items);
+            objects.forEach(obj => scene.remove(obj)); objects.length = 0;
+            transformControl.detach(); updatePropertiesPanel(null);
+            selectObject(null);
+            history.length = 0; redoStack.length = 0; 
+            camera.position.set(0, 15, roomConfig.depth * 1.5);
+            camera.lookAt(0, 0, 0);
+            renderer.domElement.focus();
+        }
+    });
 }
-
-document.getElementById('btn-start-nav').onclick = () => { if(!currentUser) { document.getElementById('homepage').classList.add('hidden'); document.getElementById('login-overlay').classList.remove('hidden'); document.getElementById('login-overlay').style.display = 'flex'; } else checkAuth(); };
-document.getElementById('btn-start-hero').onclick = document.getElementById('btn-start-nav').onclick;
-document.getElementById('btn-submit').onclick = async () => {
-    const e = document.getElementById('email-input').value;
-    const p = document.getElementById('pass-input').value;
-    try { await loginWithEmail(e.includes('@')?e:e+"@dream.app", p==="123"?"123123":p); } catch(err) { alert(err.message); }
-};
-document.getElementById('btn-google').onclick = async () => await loginWithGoogle();
-document.getElementById('btn-logout').onclick = () => { logoutUser(); window.location.reload(); };
 
 function animate() { requestAnimationFrame(animate); orbit.update(); renderer.render(scene, camera); }
 animate();
-window.onresize = () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); };
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// --- AUTH & UI ---
+const auth = getAuth();
+const homepage = document.getElementById('homepage');
+const loginOverlay = document.getElementById('login-overlay');
+const mainUi = document.getElementById('main-ui');
+const modalOverlay = document.getElementById('modal-overlay');
+
+function showLogin() {
+    if(homepage) homepage.classList.add('hidden');
+    if(mainUi) mainUi.classList.add('hidden');
+    if(loginOverlay) { loginOverlay.classList.remove('hidden'); loginOverlay.style.display = 'flex'; }
+}
+function showMainApp(user) {
+    currentUser = user;
+    if(homepage) homepage.classList.add('hidden');
+    if(loginOverlay) loginOverlay.classList.add('hidden');
+    if(mainUi) mainUi.classList.remove('hidden');
+    let name = user.email.split('@')[0];
+    if(user.displayName) name = user.displayName;
+    const uDisplay = document.getElementById('user-display'); if(uDisplay) uDisplay.innerText = name;
+}
+
+onAuthStateChanged(auth, async (user) => { if (user) currentUser = user; });
+const btnSave = document.getElementById('btn-save');
+if(btnSave) btnSave.addEventListener('click', () => {
+    if (!currentUser) return alert("Đăng nhập để lưu!");
+    const name = prompt("Tên bản lưu:", "Design " + new Date().toLocaleDateString());
+    if(name) {
+        const data = objects.map(o => ({
+            type: o.userData.type, name: o.userData.name, path: o.userData.path,
+            baseScale: o.userData.baseScale, position: o.position, rotation: o.rotation, scale: o.scale,
+            isWallMounted: o.userData.isWallMounted
+        }));
+        saveDesignToCloud(currentUser.uid, data); alert("Đã lưu!");
+    }
+});
+const btnLoad = document.getElementById('btn-load');
+if(btnLoad) btnLoad.addEventListener('click', async () => {
+    if (!currentUser) return alert("Đăng nhập để tải!");
+    toggleModal(true);
+    const listContainer = document.getElementById('save-list');
+    if(listContainer) {
+        listContainer.innerHTML = '<p style="color:#aaa">Đang tải...</p>';
+        const data = await loadDesignFromCloud(currentUser.uid);
+        listContainer.innerHTML = '';
+        if(data) {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'save-item';
+            itemDiv.innerHTML = `<div><div class="save-name">Bản lưu mới nhất</div></div><i class="fa-solid fa-cloud-arrow-down"></i>`;
+            itemDiv.onclick = () => {
+                objects.forEach(obj => scene.remove(obj)); objects.length = 0; transformControl.detach();
+                data.forEach(item => {
+                    const folder = item.path ? item.path.substring(0, item.path.lastIndexOf('/')+1) : '';
+                    const fileName = item.path ? item.path.split('/').pop() : '';
+                    const configItem = { fileName: fileName, scale: item.baseScale, name: item.name, type: item.type, isWallMounted: item.isWallMounted };
+                    createObjectFromConfig(configItem, folder); 
+                });
+                toggleModal(false);
+                alert("Đã tải!");
+            };
+            listContainer.appendChild(itemDiv);
+        } else {
+            listContainer.innerHTML = '<p style="color:#aaa">Chưa có bản lưu.</p>';
+        }
+    }
+});
+
+// Nút Login & Start 
+const btnStartNav = document.getElementById('btn-start-nav');
+if(btnStartNav) btnStartNav.addEventListener('click', () => checkAuth());
+const btnStartHero = document.getElementById('btn-start-hero');
+if(btnStartHero) btnStartHero.addEventListener('click', () => checkAuth());
+
+function checkAuth() {
+    if(currentUser) {
+        document.getElementById('homepage').classList.add('hidden');
+        document.getElementById('main-ui').classList.remove('hidden');
+        document.getElementById('user-display').innerText = currentUser.displayName || currentUser.email.split('@')[0];
+    } else {
+        document.getElementById('homepage').classList.add('hidden');
+        document.getElementById('login-overlay').classList.remove('hidden');
+        document.getElementById('login-overlay').style.display = 'flex';
+    }
+}
+
+const submitBtn = document.getElementById('btn-submit');
+if(submitBtn) {
+    submitBtn.addEventListener('click', async () => {
+        const email = document.getElementById('email-input').value.trim();
+        const pass = document.getElementById('pass-input').value;
+        if(!email || !pass) return alert("Nhập đủ thông tin!");
+        try {
+            const user = await loginWithEmail(email.includes('@')?email:email+"@dream.app", pass==="123"?"123123":pass);
+            if(user) showMainApp(user);
+        } catch(e) { alert("Lỗi: " + e.message); }
+    });
+}
+
+const btnGoogle = document.getElementById('btn-google');
+if(btnGoogle) btnGoogle.addEventListener('click', async () => { await loginWithGoogle(); checkAuth(); });
+const btnLogout = document.getElementById('btn-logout');
+if(btnLogout) btnLogout.addEventListener('click', () => { logoutUser(); window.location.reload(); });
+
+function toggleModal(show) {
+    if(show) { if(modalOverlay) { modalOverlay.classList.remove('hidden'); modalOverlay.style.display = 'flex'; } }
+    else { if(modalOverlay) modalOverlay.classList.add('hidden'); }
+}
+const closeModalBtn = document.getElementById('modal-close');
+if(closeModalBtn) closeModalBtn.addEventListener('click', () => toggleModal(false));
