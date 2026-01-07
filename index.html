@@ -13,63 +13,39 @@
             <div class="logo"><i class="fa-solid fa-layer-group"></i> DreamSpace</div>
             <div class="nav-links">
                 <a href="#features">Tính năng</a>
-                <a href="#">Cộng đồng</a>
                 <button id="btn-start-nav" class="nav-btn primary">Vào Studio</button>
             </div>
         </nav>
-        
         <div class="hero-container">
             <div class="hero-content">
-                <div class="badge">✨ Phiên bản Pro 2.0</div>
+                <div class="badge">✨ Pro 2.0</div>
                 <h1>Thiết kế nội thất <br><span class="gradient-text">trong tầm tay bạn</span></h1>
-                <p>Biến ý tưởng thành hiện thực với công cụ thiết kế 3D trực tuyến. Không cần cài đặt. Kéo, thả và tận hưởng.</p>
-                <div class="hero-actions">
-                    <button id="btn-start-hero" class="cta-btn">Bắt đầu ngay <i class="fa-solid fa-arrow-right"></i></button>
-                </div>
+                <p>Biến ý tưởng thành hiện thực với công cụ 3D trực tuyến.</p>
+                <button id="btn-start-hero" class="cta-btn">Bắt đầu ngay <i class="fa-solid fa-arrow-right"></i></button>
             </div>
-            
             <div class="hero-visual">
                 <div class="app-mockup">
                     <div class="mockup-header"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
-                    <div class="mockup-body">
-                        <div class="sidebar-mock"></div>
-                        <div class="canvas-mock"><i class="fa-solid fa-couch fa-bounce"></i><div class="grid-lines"></div></div>
-                        <div class="panel-mock"></div>
-                    </div>
+                    <div class="mockup-body"><div class="sidebar-mock"></div><div class="canvas-mock"><i class="fa-solid fa-couch fa-bounce"></i></div></div>
                 </div>
-                <div class="glow-effect"></div>
             </div>
         </div>
-
-        <div id="features" class="features-section">
-            <h2 style="text-align: center; margin-bottom: 50px;">Tại sao chọn DreamSpace?</h2>
-            <div class="features-grid">
-                <div class="feature-card"><div class="icon-box"><i class="fa-solid fa-wand-magic-sparkles"></i></div><h3>Dễ dàng</h3><p>Kéo thả trực quan.</p></div>
-                <div class="feature-card"><div class="icon-box"><i class="fa-solid fa-cloud"></i></div><h3>Lưu trữ</h3><p>Đồng bộ đám mây.</p></div>
-                <div class="feature-card"><div class="icon-box"><i class="fa-solid fa-bolt"></i></div><h3>Tốc độ</h3><p>Mượt mà mọi nơi.</p></div>
-            </div>
-        </div>
-        <footer class="footer"><p>&copy; 2026 DreamSpace Team.</p></footer>
     </div>
 
     <div id="login-overlay" class="hidden">
         <div class="login-card">
-            <div class="back-btn" onclick="window.location.reload()"><i class="fa-solid fa-arrow-left"></i></div>
             <h2>Đăng nhập</h2>
-            <div class="auth-form">
-                <input type="text" id="email-input" class="input-field" placeholder="Email">
-                <input type="password" id="pass-input" class="input-field" placeholder="Mật khẩu">
-                <button id="btn-submit" class="action-btn btn-primary">Vào Studio</button>
-                <div class="divider"><span>HOẶC</span></div>
-                <button id="btn-google" class="action-btn btn-google"><i class="fa-brands fa-google"></i> Google</button>
-            </div>
+            <input type="text" id="email-input" class="input-field" placeholder="Email/Username">
+            <input type="password" id="pass-input" class="input-field" placeholder="Mật khẩu">
+            <button id="btn-submit" class="action-btn btn-primary">Vào Studio</button>
+            <div class="divider"><span>HOẶC</span></div>
+            <button id="btn-google" class="action-btn btn-google"><i class="fa-brands fa-google"></i> Google</button>
         </div>
     </div>
 
     <div id="canvas-container"></div>
 
     <div id="main-ui" class="hidden">
-        
         <div class="floating-header">
             <div class="fh-left">
                 <div class="fh-logo"><i class="fa-solid fa-layer-group"></i></div>
@@ -86,9 +62,6 @@
             <div class="fh-center">
                 <button class="icon-btn" id="btn-save"><i class="fa-solid fa-floppy-disk"></i></button>
                 <button class="icon-btn" id="btn-load"><i class="fa-solid fa-folder-open"></i></button>
-                <div class="divider-v"></div>
-                <button class="icon-btn" id="btn-undo"><i class="fa-solid fa-rotate-left"></i></button>
-                <button class="icon-btn" id="btn-redo"><i class="fa-solid fa-rotate-right"></i></button>
             </div>
             <div class="fh-right">
                 <div class="user-pill"><span id="user-display">User</span><div class="avatar-circle"><i class="fa-solid fa-user"></i></div></div>
@@ -98,43 +71,27 @@
 
         <div class="floating-toolbar" id="dynamic-toolbar"></div>
         <div class="floating-panel" id="prop-panel">
-            <div class="fp-header"><i class="fa-solid fa-sliders"></i> Thuộc tính</div>
-            <div id="prop-content" class="empty-state"><p>Chọn vật thể</p></div>
+            <div class="fp-header">Thuộc tính</div>
+            <div id="prop-content">Chọn vật thể</div>
             <div id="prop-details" class="hidden">
-                <div class="prop-row"><span class="label">Tên</span><span class="value" id="prop-type">--</span></div>
-                <div class="prop-row"><span class="label">X</span><span class="value code" id="prop-x">0</span></div>
-                <div class="prop-row"><span class="label">Z</span><span class="value code" id="prop-z">0</span></div>
-                <div class="divider-h"></div>
-                <button id="btn-delete-obj" class="danger-btn"><i class="fa-solid fa-trash"></i> Xóa</button>
+                <div class="prop-row"><span>Tên:</span> <span id="prop-type"></span></div>
+                <div class="prop-row"><span>X:</span> <span id="prop-x"></span></div>
+                <div class="prop-row"><span>Z:</span> <span id="prop-z"></span></div>
             </div>
-        </div>
-        
-        <div class="bottom-hint">
-            <div class="hint-item"><i class="fa-solid fa-computer-mouse"></i> Kéo để di chuyển</div>
-            <div class="hint-item"><kbd>R</kbd> Xoay</div>
-            <div class="hint-item"><kbd>Del</kbd> Xóa</div>
         </div>
 
         <div id="studio-welcome" class="studio-welcome-overlay">
             <div class="welcome-content">
-                <h2>👋 Chào mừng trở lại!</h2>
-                <p>Chọn không gian thiết kế:</p>
+                <h2>👋 Chọn không gian thiết kế</h2>
                 <div class="room-grid">
                     <div class="room-card" onclick="window.selectRoomFromDashboard('livingroom')"><i class="fa-solid fa-couch"></i><span>Phòng Khách</span></div>
                     <div class="room-card" onclick="window.selectRoomFromDashboard('bedroom')"><i class="fa-solid fa-bed"></i><span>Phòng Ngủ</span></div>
                     <div class="room-card" onclick="window.selectRoomFromDashboard('kitchen')"><i class="fa-solid fa-kitchen-set"></i><span>Nhà Bếp</span></div>
                     <div class="room-card" onclick="window.selectRoomFromDashboard('bathroom')"><i class="fa-solid fa-bath"></i><span>Phòng Tắm</span></div>
                     <div class="room-card" onclick="window.selectRoomFromDashboard('officeroom')"><i class="fa-solid fa-briefcase"></i><span>Văn Phòng</span></div>
-                    <div class="room-card empty" onclick="window.selectRoomFromDashboard('empty')"><i class="fa-solid fa-layer-group"></i><span>Sân Khấu</span></div>
+                    <div class="room-card" onclick="window.selectRoomFromDashboard('empty')"><i class="fa-solid fa-layer-group"></i><span>Sân Khấu</span></div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <div id="modal-overlay" class="hidden">
-        <div class="modal-card">
-            <div class="modal-header"><h3>Bản lưu</h3><i class="fa-solid fa-xmark" id="modal-close"></i></div>
-            <div class="modal-body" id="save-list"></div>
         </div>
     </div>
 
