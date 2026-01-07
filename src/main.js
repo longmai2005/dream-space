@@ -11,53 +11,66 @@ import {
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 let currentUser = null;
-const objects = []; // Danh sách vật thể nội thất
+const objects = []; 
 const history = []; 
 const redoStack = [];
 let roomMeshes = [];
 let currentRoomConfig = null;
-
-// Biến cho Dragging Logic mới
 let isDragging = false;
 let draggedObject = null;
-const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0); // Mặt phẳng sàn ảo
+const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 const intersectPoint = new THREE.Vector3();
 const offset = new THREE.Vector3();
 
-// --- HELPER: Auto Icon ---
+// *** HÀM CHỌN PHÒNG ***
+window.selectRoomFromDashboard = (roomKey) => {
+    const selector = document.getElementById('room-selector');
+    const welcomeScreen = document.getElementById('studio-welcome');
+    
+    if(selector) {
+        selector.value = roomKey;
+        selector.dispatchEvent(new Event('change'));
+    }
+
+    if(welcomeScreen) {
+        welcomeScreen.style.opacity = '0';
+        setTimeout(() => {
+            welcomeScreen.classList.add('hidden');
+            welcomeScreen.style.display = 'none';
+        }, 500);
+    }
+};
+
+// --- HELPER FUNCTIONS ---
 function getIcon(name) {
+    if (!name || typeof name !== 'string') return 'cube';
     const n = name.toLowerCase();
-    if(n.includes('chair') || n.includes('sofa') || n.includes('bench') || n.includes('couch')) return 'couch';
+    if(n.includes('chair')||n.includes('sofa')||n.includes('couch')) return 'couch';
     if(n.includes('bed')) return 'bed';
-    if(n.includes('table') || n.includes('desk')) return 'table';
-    if(n.includes('lamp') || n.includes('light')) return 'lightbulb';
-    if(n.includes('plant') || n.includes('flower')) return 'seedling';
-    if(n.includes('cabinet') || n.includes('shelf') || n.includes('wardrobe') || n.includes('drawer')) return 'box-archive';
-    if(n.includes('computer') || n.includes('monitor') || n.includes('tv') || n.includes('laptop')) return 'computer';
-    if(n.includes('bath') || n.includes('toilet') || n.includes('sink')) return 'bath';
-    if(n.includes('fridge') || n.includes('kitchen') || n.includes('stove')) return 'utensils';
-    if(n.includes('window') || n.includes('curtain') || n.includes('blind') || n.includes('door')) return 'door-open';
-    if(n.includes('picture') || n.includes('art') || n.includes('frame') || n.includes('clock')) return 'image';
+    if(n.includes('table')||n.includes('desk')) return 'table';
+    if(n.includes('lamp')||n.includes('light')) return 'lightbulb';
+    if(n.includes('plant')) return 'seedling';
+    if(n.includes('cabinet')||n.includes('shelf')) return 'box-archive';
+    if(n.includes('computer')||n.includes('tv')) return 'computer';
+    if(n.includes('bath')||n.includes('toilet')) return 'bath';
+    if(n.includes('fridge')||n.includes('kitchen')) return 'utensils';
     return 'cube';
 }
 
-function getScale(name) {
+function isWallItem(name) {
+    if (!name || typeof name !== 'string') return false;
     const n = name.toLowerCase();
-    if (n.includes('pen') || n.includes('cup') || n.includes('mouse') || n.includes('brush') || n.includes('soda') || n.includes('mug')) return 2.0; 
-    if (n.includes('bed') && (n.includes('double') || n.includes('bunk') || n.includes('single'))) return 0.015;
-    return 1.2; 
+    return n.includes('window')||n.includes('curtain')||n.includes('blind')||n.includes('art')||n.includes('picture')||n.includes('frame')||n.includes('clock')||n.includes('wall')||n.includes('cabinet upper');
 }
 
-function isWallItem(name) {
+function getScale(name) {
+    if (!name || typeof name !== 'string') return 1.2;
     const n = name.toLowerCase();
-    return n.includes('window') || n.includes('curtain') || n.includes('blind') || 
-           n.includes('art') || n.includes('picture') || n.includes('frame') || 
-           n.includes('clock') || n.includes('wall shelf') || n.includes('switch') || 
-           n.includes('outlet') || n.includes('ac') || n.includes('mounted') ||
-           n.includes('wall lamp') || n.includes('sconce') || n.includes('painting') ||
-           n.includes('cabinet upper') || n.includes('doorway') || n.includes('knife rack') || n.includes('papertowel');
+    if (n.includes('pen')||n.includes('cup')||n.includes('mouse')) return 2.0; 
+    if (n.includes('bed')) return 0.015;
+    return 1.2; 
 }
 
 // --- DATABASE FULL (COPY TỪ INPUT CỦA BẠN) ---
@@ -552,48 +565,46 @@ function showHomepage() {
 }
 
 function showMainApp(user) {
-    // 1. Ẩn các màn hình cũ
     document.getElementById('homepage').classList.add('hidden');
     document.getElementById('login-overlay').classList.add('hidden');
     
-    // 2. Cập nhật tên user
-    let name = user.email.split('@')[0];
-    if(user.displayName) name = user.displayName;
-    document.getElementById('user-display').innerText = name;
-    document.getElementById('intro-name').innerText = name; // Tên ở màn hình Intro
+    // Cập nhật tên user an toàn (fix lỗi null)
+    const nameEl = document.getElementById('intro-name');
+    if (nameEl) nameEl.innerText = user.displayName || user.email.split('@')[0];
+    
+    const uDisplay = document.getElementById('user-display'); 
+    if (uDisplay) uDisplay.innerText = user.displayName || user.email.split('@')[0];
 
-    // 3. HIỆN INTRO SPLASH TRƯỚC
+    // 1. Hiện Intro
     const intro = document.getElementById('intro-splash');
     intro.classList.remove('hidden');
-    intro.style.display = 'flex'; // Ép hiện
+    intro.style.display = 'flex';
+    intro.style.opacity = '1';
 
-    // 4. Kích hoạt Main UI (ở chế độ ẩn dưới Intro)
+    // 2. Load nhẹ phòng khách để làm nền
+    const selector = document.getElementById('room-selector');
+    if(selector && selector.value === "") { 
+        selector.value = 'livingroom'; 
+        selector.dispatchEvent(new Event('change')); 
+    }
+
+    // 3. Hiện Main UI (chứa dashboard) nhưng ẩn dưới intro
     const mainUI = document.getElementById('main-ui');
     mainUI.classList.remove('hidden');
     
-    // Đảm bảo Dashboard cũng được bật sẵn trong Main UI
-    const welcome = document.getElementById('studio-welcome');
-    if(welcome) {
-        welcome.classList.remove('hidden');
-        welcome.style.display = 'flex';
-        welcome.style.opacity = '1';
-    }
+    const dashboard = document.getElementById('studio-welcome');
+    dashboard.classList.remove('hidden');
+    dashboard.style.display = 'flex';
+    dashboard.style.opacity = '1';
 
-    // Load nhẹ phòng khách để nền không đen
-    const selector = document.getElementById('room-selector');
-    if(selector && selector.value === "") {
-        selector.value = 'livingroom';
-        selector.dispatchEvent(new Event('change'));
-    }
-
-    // 5. SAU 2 GIÂY -> ẨN INTRO -> HIỆN DASHBOARD
+    // 4. Chuyển cảnh sau 2s
     setTimeout(() => {
-        intro.style.opacity = '0'; // Hiệu ứng mờ dần
+        intro.style.opacity = '0';
         setTimeout(() => {
-            intro.classList.add('hidden'); // Ẩn hẳn
+            intro.classList.add('hidden');
             intro.style.display = 'none';
-        }, 800); // Đợi CSS transition xong
-    }, 2000); // Thời gian chạy intro (2s)
+        }, 800);
+    }, 2000);
 }
 
 onAuthStateChanged(auth, async (user) => { if (user) currentUser = user; });

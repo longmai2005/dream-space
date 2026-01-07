@@ -175,38 +175,23 @@ body { margin: 0; overflow: hidden; font-family: 'Inter', sans-serif; background
 .save-date { font-size: 0.75em; color: #888; margin-top: 3px; }
 .save-item i { color: #4a90e2; }
 
-#intro-splash {
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: #0f1115; /* Nền tối hoàn toàn */
-    z-index: 10000; /* Cao hơn tất cả */
-    display: flex; justify-content: center; align-items: center;
-    transition: opacity 0.8s ease-in-out;
-}
+/* INTRO SPLASH */
+#intro-splash { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0f1115; z-index: 10000; display: flex; justify-content: center; align-items: center; transition: opacity 0.8s ease-in-out; }
 .intro-content { text-align: center; animation: fadeIn 0.5s ease-out; }
-.intro-logo { 
-    font-size: 4em; color: #4a90e2; margin-bottom: 20px; 
-    animation: bounce 2s infinite; 
-}
-.intro-content h2 { font-size: 2em; color: white; margin-bottom: 10px; }
+.intro-logo { font-size: 4em; color: #4a90e2; margin-bottom: 20px; }
 #intro-name { color: #4a90e2; }
-.intro-content p { color: #8892b0; margin-bottom: 30px; }
+.loading-bar { width: 200px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin: 20px auto; }
+.bar-fill { width: 0%; height: 100%; background: #4a90e2; animation: loadBar 2s ease-in-out forwards; }
+@keyframes loadBar { 0% { width: 0%; } 100% { width: 100%; } }
 
-/* Thanh Loading giả lập */
-.loading-bar { 
-    width: 300px; height: 4px; background: rgba(255,255,255,0.1); 
-    border-radius: 2px; overflow: hidden; margin: 0 auto; 
-}
-.bar-fill { 
-    width: 0%; height: 100%; background: #4a90e2; 
-    animation: loadBar 2s ease-in-out forwards; 
-}
+/* DASHBOARD */
+.studio-welcome-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 12, 16, 0.95); z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 0.5s; backdrop-filter: blur(10px); }
+.studio-welcome-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+.welcome-content { text-align: center; max-width: 900px; animation: slideUp 0.6s ease-out; }
+.room-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 0 20px; }
+.room-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 30px; border-radius: 16px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 15px; transition: 0.3s; }
+.room-card:hover { transform: translateY(-10px); border-color: #4a90e2; background: rgba(74, 144, 226, 0.1); }
+.room-card i { font-size: 2.5em; color: #4a90e2; }
 
-@keyframes loadBar { 0% { width: 0%; } 50% { width: 60%; } 100% { width: 100%; } }
-@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-/* Cải thiện Dashboard cho "xịn" hơn */
-.studio-welcome-overlay {
-    backdrop-filter: blur(15px); /* Làm mờ nền 3D mạnh hơn */
-    background: rgba(10, 12, 16, 0.85); /* Trong suốt hơn một chút */
-}

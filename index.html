@@ -10,13 +10,13 @@
 <body>
     <div id="intro-splash" class="hidden">
         <div class="intro-content">
-            <div class="intro-logo"><i class="fa-solid fa-layer-group"></i></div>
+            <div class="intro-logo"><i class="fa-solid fa-layer-group fa-bounce"></i></div>
             <h2>Xin chào, <span id="intro-name">User</span>!</h2>
-            <p>Đang chuẩn bị không gian sáng tạo của bạn...</p>
+            <p>Đang chuẩn bị không gian sáng tạo...</p>
             <div class="loading-bar"><div class="bar-fill"></div></div>
         </div>
     </div>
-    
+
     <div id="homepage">
         <nav class="navbar">
             <div class="logo">
@@ -170,6 +170,21 @@
             <div class="hint-item"><kbd>Right Click</kbd> Xoay Cam</div>
             <div class="hint-item"><kbd>Del/Back</kbd> Xóa vật thể </div>
             <div class="hint-item"><kbd>R</kbd> Xoay vật thể</div>
+        </div>
+        
+        <div id="studio-welcome" class="studio-welcome-overlay hidden">
+            <div class="welcome-content">
+                <h2>👋 Chào mừng trở lại!</h2>
+                <p>Chọn không gian để bắt đầu:</p>
+                <div class="room-grid">
+                    <div class="room-card" onclick="window.selectRoomFromDashboard('livingroom')"><i class="fa-solid fa-couch"></i><span>Phòng Khách</span></div>
+                    <div class="room-card" onclick="window.selectRoomFromDashboard('bedroom')"><i class="fa-solid fa-bed"></i><span>Phòng Ngủ</span></div>
+                    <div class="room-card" onclick="window.selectRoomFromDashboard('kitchen')"><i class="fa-solid fa-kitchen-set"></i><span>Nhà Bếp</span></div>
+                    <div class="room-card" onclick="window.selectRoomFromDashboard('bathroom')"><i class="fa-solid fa-bath"></i><span>Phòng Tắm</span></div>
+                    <div class="room-card" onclick="window.selectRoomFromDashboard('officeroom')"><i class="fa-solid fa-briefcase"></i><span>Văn Phòng</span></div>
+                    <div class="room-card empty" onclick="window.selectRoomFromDashboard('empty')"><i class="fa-solid fa-layer-group"></i><span>Sân Khấu</span></div>
+                </div>
+            </div>
         </div>
     </div>
 
