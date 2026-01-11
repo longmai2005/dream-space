@@ -582,41 +582,36 @@ const modalOverlay = document.getElementById('modal-overlay');
 onAuthStateChanged(auth, (user) => { 
     currentUser = user; 
     if (!user) showHomepage();
-    // Nếu có user, code ở nút bấm sẽ gọi showMainApp
 });
 
 function showHomepage() {
     document.getElementById('homepage').classList.remove('hidden');
     document.getElementById('login-overlay').classList.add('hidden');
     document.getElementById('main-ui').classList.add('hidden');
-    document.getElementById('intro-splash').classList.add('hidden'); // Đảm bảo ẩn intro
+    document.getElementById('intro-splash').classList.add('hidden'); 
 }
 
 function showMainApp(user) {
     document.getElementById('homepage').classList.add('hidden');
     document.getElementById('login-overlay').classList.add('hidden');
     
-    // Cập nhật tên user an toàn (fix lỗi null)
     const nameEl = document.getElementById('intro-name');
     if (nameEl) nameEl.innerText = user.displayName || user.email.split('@')[0];
     
     const uDisplay = document.getElementById('user-display'); 
     if (uDisplay) uDisplay.innerText = user.displayName || user.email.split('@')[0];
 
-    // 1. Hiện Intro
     const intro = document.getElementById('intro-splash');
     intro.classList.remove('hidden');
     intro.style.display = 'flex';
     intro.style.opacity = '1';
 
-    // 2. Load nhẹ phòng khách để làm nền
     const selector = document.getElementById('room-selector');
     if(selector && selector.value === "") { 
         selector.value = 'livingroom'; 
         selector.dispatchEvent(new Event('change')); 
     }
 
-    // 3. Hiện Main UI (chứa dashboard) nhưng ẩn dưới intro
     const mainUI = document.getElementById('main-ui');
     mainUI.classList.remove('hidden');
     
@@ -625,7 +620,6 @@ function showMainApp(user) {
     dashboard.style.display = 'flex';
     dashboard.style.opacity = '1';
 
-    // 4. Chuyển cảnh sau 2s
     setTimeout(() => {
         intro.style.opacity = '0';
         setTimeout(() => {
@@ -680,29 +674,25 @@ if(btnLoad) btnLoad.addEventListener('click', async () => {
     }
 });
 
-// Nút Login & Start 
 const btnStartNav = document.getElementById('btn-start-nav');
 if(btnStartNav) btnStartNav.addEventListener('click', () => checkAuth());
 const btnStartHero = document.getElementById('btn-start-hero');
 if(btnStartHero) btnStartHero.addEventListener('click', () => checkAuth());
-let isRegisterMode = false; // Biến theo dõi chế độ
+let isRegisterMode = false; 
 
-// 1. Xử lý nút chuyển đổi Đăng nhập / Đăng ký
 const toggleBtn = document.getElementById('toggle-mode');
 const formTitle = document.getElementById('form-title');
 const submitBtnLabel = document.getElementById('btn-submit');
 
 if(toggleBtn) {
     toggleBtn.addEventListener('click', () => {
-        isRegisterMode = !isRegisterMode; // Đảo ngược trạng thái
+        isRegisterMode = !isRegisterMode; 
         
         if(isRegisterMode) {
-            // Chuyển sang giao diện Đăng Ký
             formTitle.innerText = "Tạo tài khoản";
             submitBtnLabel.innerText = "Đăng ký";
             toggleBtn.innerText = "Đã có tài khoản? Đăng nhập";
         } else {
-            // Quay về giao diện Đăng Nhập
             formTitle.innerText = "Đăng nhập";
             submitBtnLabel.innerText = "Vào Studio";
             toggleBtn.innerText = "Chưa có tài khoản? Đăng ký ngay";
@@ -730,18 +720,15 @@ if(submitBtn) {
         
         if(!email || !pass) return alert("Vui lòng nhập đầy đủ thông tin!");
 
-        // Hack nhẹ: Nếu người dùng nhập tên thay vì email (vd: "admin"), tự động thêm đuôi email giả
         const fakeEmail = email.includes('@') ? email : email + "@dream.app";
-        const fakePass = pass === "123" ? "123123" : pass; // Hack pass 123 cho nhanh
+        const fakePass = pass === "123" ? "123123" : pass; 
 
         try {
             let user;
             if(isRegisterMode) {
-                // Gọi hàm Đăng Ký từ firebase-config
                 user = await registerWithEmail(fakeEmail, fakePass);
                 alert("Đăng ký thành công! Đang đăng nhập...");
             } else {
-                // Gọi hàm Đăng Nhập
                 user = await loginWithEmail(fakeEmail, fakePass);
             }
             
