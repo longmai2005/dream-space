@@ -226,58 +226,85 @@ function buildRoomShell(config) {
 }
 
 // --- 3. LOGIC TẠO ĐỒ VẬT (FIX LỖI MẶT SÀN) ---
-function createObjectFromConfig(item, folderPath) {
+function createObjectFromConfig(item, folderPath, pos = null) {
     if (item.type === 'model' && item.fileName) {
-        const fullPath = folderPath + item.fileName;
-        loader.load(fullPath, (gltf) => {
+        loader.load(folderPath + item.fileName, (gltf) => {
             const model = gltf.scene;
             
-            // 1. Tự động tính toán Scale
-            let s = 1.2; // Mặc định
-            const n = item.fileName.toLowerCase();
-            if (n.includes('bed')) s = 0.015; // Giường thường scale rất nhỏ
+            // 1. Scale
+            let s = item.scale.x || item.scale || 1.2;
+            const n = item.name.toLowerCase();
+            // Tinh chỉnh scale cho một số đồ đặc biệt
+            if (n.includes('bed')) s = 0.015; 
             if (n.includes('cup') || n.includes('mouse') || n.includes('pen')) s = 2.0; 
-            
             model.scale.set(s, s, s);
 
-            // 2. Tự động tính toán mặt sàn (FIX LỖI CHÌM/NỔI)
-            // Lấy hộp bao quanh (Bounding Box) của model
+            // 2. Tính toán Bounding Box để căn chỉnh
             const box = new THREE.Box3().setFromObject(model);
-            const height = box.max.y - box.min.y;
-            // Tính khoảng cách từ điểm thấp nhất (min.y) đến gốc (0)
-            const yOffset = -box.min.y; 
-            
-            // Áp dụng vị trí
-            if (item.isWallMounted && currentRoomConfig) {
-                // Gắn tường: Cao 2m
-                model.position.set(0, 2.0, -currentRoomConfig.depth/2 + 0.2); 
+            const size = new THREE.Vector3();
+            box.getSize(size);
+            const center = new THREE.Vector3();
+            box.getCenter(center);
+
+            // 3. Xử lý vị trí Y (Độ cao)
+            let finalY = 0;
+
+            if (item.isWallMounted) {
+                // Logic cho đồ gắn tường
+                if (n.includes('ceiling') || n.includes('fan')) {
+                    // Đồ trần nhà (Quạt trần, đèn trần) -> Gắn sát trần (ví dụ trần cao 6m)
+                    finalY = 6 - (box.max.y - center.y); 
+                } else if (n.includes('window') || n.includes('curtain')) {
+                    // Cửa sổ, rèm -> Giữa tường (tầm 2.5m - 3m)
+                    finalY = 2.5;
+                } else if (n.includes('painting') || n.includes('picture') || n.includes('art')) {
+                    // Tranh ảnh -> Tầm mắt (1.5m - 1.8m)
+                    finalY = 1.8;
+                } else if (n.includes('ac') || n.includes('air conditioner')) {
+                    // Điều hòa -> Gần trần (5m)
+                    finalY = 5.0;
+                } else {
+                    // Mặc định cho đồ tường khác (đèn tường, đồng hồ)
+                    finalY = 2.0;
+                }
+                
+                // Đẩy vật thể ra sát tường (Z = -depth/2)
+                // Lưu ý: Cần xoay vật thể để mặt trước hướng ra ngoài nếu cần
+                model.position.z = -currentRoomConfig.depth / 2 + size.z / 2; 
+
             } else {
-                // Đặt sàn: Dịch chuyển Y lên đúng bằng khoảng hụt
-                model.position.set(0, yOffset, 0); 
+                // Logic cho đồ đặt sàn (Fix lỗi chìm/nổi)
+                // Tính khoảng cách từ tâm object xuống đáy object
+                const yOffset = center.y - box.min.y;
+                finalY = yOffset; // Đặt đáy object trùng với mặt sàn (y=0)
             }
 
-            // Bóng đổ
-            model.traverse((child) => { if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; } });
+            // 4. Áp dụng vị trí cuối cùng
+            if (pos) {
+                // Nếu load từ file save hoặc có vị trí chỉ định
+                model.position.set(pos.x, pos.y, pos.z); 
+            } else {
+                // Vị trí mặc định khi mới spawn
+                model.position.set(0, finalY, item.isWallMounted ? (-currentRoomConfig.depth/2 + 0.2) : 0);
+            }
 
-            // Tagging
-            model.userData = { 
-                type: 'model', name: item.name, path: fullPath, baseScale: s, 
-                isWallMounted: item.isWallMounted, isModelRoot: true, yOffset: yOffset 
-            };
+            // 5. Shadow & UserData
+            model.traverse((c) => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
             
-            scene.add(model); objects.push(model);
-            selectObject(model); // Tự động chọn sau khi tạo
-            addToHistory({ type: 'ADD', object: model }); 
+            model.userData = { 
+                type: 'model', 
+                name: item.name, 
+                fileName: item.fileName, 
+                folder: folderPath,      
+                path: folderPath + item.fileName, 
+                isWallMounted: item.isWallMounted 
+            };
 
-        }, undefined, (err) => { console.warn(`Lỗi tải: ${fullPath}`); });
-    } else {
-        // Fallback Box
-        const mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: 0x999999 }));
-        mesh.position.set(0, 0.5, 0);
-        mesh.userData = { type: 'basic', name: item.name, isModelRoot: true, yOffset: 0.5 };
-        scene.add(mesh); objects.push(mesh);
-        selectObject(mesh);
-        addToHistory({ type: 'ADD', object: mesh });
+            scene.add(model); objects.push(model); limitObjectBounds(model); 
+            if(!pos) selectObject(model); 
+            addToHistory({ type: 'ADD', object: model });
+
+        }, undefined, (e) => console.warn(e));
     }
 }
 
