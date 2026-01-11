@@ -551,6 +551,7 @@ const loginOverlay = document.getElementById('login-overlay');
 const mainUi = document.getElementById('main-ui');
 const modalOverlay = document.getElementById('modal-overlay');
 
+
 onAuthStateChanged(auth, (user) => { 
     currentUser = user; 
     if (!user) showHomepage();
@@ -657,6 +658,30 @@ const btnStartNav = document.getElementById('btn-start-nav');
 if(btnStartNav) btnStartNav.addEventListener('click', () => checkAuth());
 const btnStartHero = document.getElementById('btn-start-hero');
 if(btnStartHero) btnStartHero.addEventListener('click', () => checkAuth());
+let isRegisterMode = false; // Biến theo dõi chế độ
+
+// 1. Xử lý nút chuyển đổi Đăng nhập / Đăng ký
+const toggleBtn = document.getElementById('toggle-mode');
+const formTitle = document.getElementById('form-title');
+const submitBtnLabel = document.getElementById('btn-submit');
+
+if(toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+        isRegisterMode = !isRegisterMode; // Đảo ngược trạng thái
+        
+        if(isRegisterMode) {
+            // Chuyển sang giao diện Đăng Ký
+            formTitle.innerText = "Tạo tài khoản";
+            submitBtnLabel.innerText = "Đăng ký";
+            toggleBtn.innerText = "Đã có tài khoản? Đăng nhập";
+        } else {
+            // Quay về giao diện Đăng Nhập
+            formTitle.innerText = "Đăng nhập";
+            submitBtnLabel.innerText = "Vào Studio";
+            toggleBtn.innerText = "Chưa có tài khoản? Đăng ký ngay";
+        }
+    });
+}
 
 function checkAuth() {
     if(currentUser) {
@@ -672,15 +697,38 @@ function checkAuth() {
 
 const submitBtn = document.getElementById('btn-submit');
 if(submitBtn) {
-    submitBtn.addEventListener('click', async () => {
+    submitBtn.onclick = async () => {
         const email = document.getElementById('email-input').value.trim();
         const pass = document.getElementById('pass-input').value;
-        if(!email || !pass) return alert("Nhập đủ thông tin!");
+        
+        if(!email || !pass) return alert("Vui lòng nhập đầy đủ thông tin!");
+
+        // Hack nhẹ: Nếu người dùng nhập tên thay vì email (vd: "admin"), tự động thêm đuôi email giả
+        const fakeEmail = email.includes('@') ? email : email + "@dream.app";
+        const fakePass = pass === "123" ? "123123" : pass; // Hack pass 123 cho nhanh
+
         try {
-            const user = await loginWithEmail(email.includes('@')?email:email+"@dream.app", pass==="123"?"123123":pass);
+            let user;
+            if(isRegisterMode) {
+                // Gọi hàm Đăng Ký từ firebase-config
+                user = await registerWithEmail(fakeEmail, fakePass);
+                alert("Đăng ký thành công! Đang đăng nhập...");
+            } else {
+                // Gọi hàm Đăng Nhập
+                user = await loginWithEmail(fakeEmail, fakePass);
+            }
+            
             if(user) showMainApp(user);
-        } catch(e) { alert("Lỗi: " + e.message); }
-    });
+            
+        } catch(e) {
+            // Việt hóa thông báo lỗi phổ biến
+            let msg = e.message;
+            if(msg.includes("email-already-in-use")) msg = "Tên tài khoản/Email này đã có người dùng.";
+            if(msg.includes("weak-password")) msg = "Mật khẩu quá yếu (cần ít nhất 6 ký tự).";
+            if(msg.includes("user-not-found") || msg.includes("invalid-credential")) msg = "Sai tài khoản hoặc mật khẩu.";
+            alert("Lỗi: " + msg);
+        }
+    };
 }
 
 const btnGoogle = document.getElementById('btn-google');

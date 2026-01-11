@@ -84,15 +84,19 @@
     <div id="login-overlay" class="hidden">
         <div class="login-card">
             <div class="back-btn" onclick="window.location.reload()"><i class="fa-solid fa-arrow-left"></i></div>
-            <h2>Đăng nhập</h2>
-            <div class="auth-form">
-                <input type="text" id="email-input" class="input-field" placeholder="Tên đăng nhập">
+            <h2 id="form-title">Đăng nhập</h2> <div class="auth-form">
+                <input type="text" id="email-input" class="input-field" placeholder="Email">
                 <input type="password" id="pass-input" class="input-field" placeholder="Mật khẩu">
+                
                 <button id="btn-submit" class="action-btn btn-primary">Vào Studio</button>
+                
                 <div class="divider"><span>HOẶC</span></div>
                 <button id="btn-google" class="action-btn btn-google"><i class="fa-brands fa-google"></i> Google</button>
             </div>
-            <p class="toggle-text" id="toggle-mode">Tạo tài khoản mới</p>
+            
+            <p class="toggle-text" id="toggle-mode" style="margin-top: 15px; font-size: 0.9em; color: #aaa; cursor: pointer; text-decoration: underline;">
+                Chưa có tài khoản? Đăng ký ngay
+            </p>
         </div>
     </div>
 
