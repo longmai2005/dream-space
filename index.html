@@ -168,6 +168,9 @@
                 </div>
 
                 <div class="divider-h"></div>
+                <button id="btn-delete-obj" class="danger-btn">
+                    <i class="fa-solid fa-trash"></i> Xóa vật thể
+                </button>
             </div>
         </div>
         
@@ -194,6 +197,18 @@
         </div>
     </div>
 
+    <div id="modal-overlay" class="hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Bản lưu thiết kế</h3>
+                <i class="fa-solid fa-xmark" id="modal-close"></i>
+            </div>
+            <div class="modal-body" id="save-list">
+                </div>
+        </div>
+    </div>
+
     <script type="module" src="/src/main.js"></script>
+
 </body>
 </html>

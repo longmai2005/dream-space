@@ -423,7 +423,7 @@ function deleteObject(obj) {
     if (index > -1) {
         addToHistory({ type: 'REMOVE', object: obj });
         scene.remove(obj);
-        objects.splice(index, 1); 
+        objects.splice(index, 1);
         selectObject(null);
         console.log("Đã xóa vật thể");
     }
@@ -541,8 +541,10 @@ const btnUndo = document.getElementById('btn-undo');
 if(btnUndo) btnUndo.addEventListener('click', executeUndo);
 const btnRedo = document.getElementById('btn-redo');
 if(btnRedo) btnRedo.addEventListener('click', executeRedo);
-const btnDeleteObj = document.getElementById('btn-delete-obj');
-if(btnDeleteObj) btnDeleteObj.addEventListener('click', () => deleteObject(transformControl.object));
+const btnDeleteUI = document.getElementById('btn-delete-obj');
+if(btnDeleteUI) btnDeleteUI.onclick = () => {
+    if(transformControl.object) deleteObject(transformControl.object);
+};
 
 // --- INIT ---
 const roomSelector = document.getElementById('room-selector');
@@ -563,6 +565,7 @@ if (roomSelector) {
         }
     });
 }
+
 
 function animate() { requestAnimationFrame(animate); orbit.update(); renderer.render(scene, camera); }
 animate();
@@ -637,20 +640,27 @@ function showMainApp(user) {
 
 const btnSave = document.getElementById('btn-save');
 if(btnSave) btnSave.addEventListener('click', () => {
-    if (!currentUser) return alert("Đăng nhập để lưu!");
+    if (!currentUser) return alert("Vui lòng đăng nhập để lưu!");
     
-    const data = objects.map(o => ({ 
-        type: o.userData.type, 
-        name: o.userData.name, 
-        fileName: o.userData.fileName, 
-        folder: o.userData.folder,
-        position: { x: o.position.x, y: o.position.y, z: o.position.z },
-        rotation: { x: o.rotation.x, y: o.rotation.y, z: o.rotation.z },
-        scale: { x: o.scale.x, y: o.scale.y, z: o.scale.z },
-        isWallMounted: o.userData.isWallMounted 
-    }));
-    
-    saveDesignToCloud(currentUser.uid, data).then(() => {
+    const designData = {
+        roomKey: document.getElementById('room-selector').value,
+        timestamp: new Date().getTime(),
+        saveName: prompt("Đặt tên cho bản lưu này:", "Bản thiết kế " + new Date().toLocaleTimeString()),
+        items: objects.map(o => ({ 
+            type: o.userData.type, 
+            name: o.userData.name, 
+            fileName: o.userData.fileName, 
+            folder: o.userData.folder,
+            position: { x: o.position.x, y: o.position.y, z: o.position.z },
+            rotation: { x: o.rotation.x, y: o.rotation.y, z: o.rotation.z },
+            scale: { x: o.scale.x, y: o.scale.y, z: o.scale.z },
+            isWallMounted: o.userData.isWallMounted 
+        }))
+    };
+
+    if(!designData.saveName) return; 
+
+    saveDesignToCloud(currentUser.uid, designData).then(() => {
         alert("Đã lưu thiết kế thành công!");
     }).catch(e => alert("Lỗi lưu: " + e.message));
 });
@@ -659,48 +669,48 @@ const btnLoad = document.getElementById('btn-load');
 if(btnLoad) btnLoad.addEventListener('click', async () => {
     if(!currentUser) return alert("Vui lòng đăng nhập!");
     
+    const currentRoom = document.getElementById('room-selector').value;
+    if(!currentRoom) return alert("Vui lòng chọn phòng trước khi load!");
+
     toggleModal(true);
     const list = document.getElementById('save-list'); 
-    list.innerHTML = '<div style="color:white; text-align:center;">Đang tải dữ liệu...</div>';
+    list.innerHTML = '<div style="color:white; text-align:center;">Đang tìm các bản lưu...</div>';
     
     try {
-        const data = await loadDesignFromCloud(currentUser.uid);
+        const allSaves = await loadDesignFromCloud(currentUser.uid);
         list.innerHTML = ''; 
 
-        if(data && data.length > 0) {
-            const div = document.createElement('div'); 
-            div.className = 'save-item';
-            div.innerHTML = `
-                <div>
-                    <div class="save-name">Bản lưu gần nhất</div>
-                    <div class="save-date">Click để mở thiết kế</div>
-                </div>
-                <i class="fa-solid fa-cloud-arrow-down"></i>
-            `;
-            
-            div.onclick = () => {
-                objects.forEach(o => scene.remove(o)); 
-                objects.length = 0; 
-                transformControl.detach();
+        const filteredSaves = allSaves ? (Array.isArray(allSaves) ? allSaves : [allSaves]).filter(s => s.roomKey === currentRoom) : [];
+
+        if(filteredSaves.length > 0) {
+            filteredSaves.sort((a, b) => b.timestamp - a.timestamp); 
+
+            filteredSaves.forEach((save, index) => {
+                const date = new Date(save.timestamp).toLocaleString('vi-VN');
+                const div = document.createElement('div'); 
+                div.className = 'save-item';
+                div.innerHTML = `
+                    <div style="flex:1">
+                        <div class="save-name">${save.saveName || "Bản lưu " + (index + 1)}</div>
+                        <div class="save-date"><i class="fa-regular fa-clock"></i> ${date}</div>
+                    </div>
+                    <button class="load-action-btn">Mở</button>
+                `;
                 
-                data.forEach(item => {
-                    createObjectFromConfig(
-                        { 
-                            fileName: item.fileName, 
-                            name: item.name, 
-                            type: item.type, 
-                            isWallMounted: item.isWallMounted,
-                            scale: item.scale 
-                        }, 
-                        item.folder, 
-                        item.position 
-                    );
-                });
-                toggleModal(false);
-            };
-            list.appendChild(div);
+                div.querySelector('.load-action-btn').onclick = () => {
+                    objects.forEach(o => scene.remove(o)); 
+                    objects.length = 0; 
+                    transformControl.detach();
+                    
+                    save.items.forEach(item => {
+                        createObjectFromConfig(item, item.folder, item.position);
+                    });
+                    toggleModal(false);
+                };
+                list.appendChild(div);
+            });
         } else {
-            list.innerHTML = '<div style="color:#aaa; text-align:center;">Chưa có bản lưu nào.</div>';
+            list.innerHTML = `<div style="color:#aaa; text-align:center; padding:20px;">Không có bản lưu nào cho phòng này.</div>`;
         }
     } catch (e) {
         list.innerHTML = `<div style="color:red;">Lỗi: ${e.message}</div>`;
